@@ -28,13 +28,16 @@ export function Header() {
       <div className="flex items-center gap-md">
         <a
           className="font-body-md text-body-md text-on-surface-variant hover:text-on-background hidden sm:block"
-          href="#"
+          href="/sign-in"
         >
           Log in
         </a>
-        <button className="bg-primary-container text-on-primary font-body-md text-body-md font-semibold px-lg py-sm rounded-full hover:opacity-90 transition-opacity shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+        <a 
+          href="/sign-up"
+          className="bg-primary-container text-on-primary font-body-md text-body-md font-semibold px-lg py-sm rounded-full hover:opacity-90 transition-opacity shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+        >
           Get Started
-        </button>
+        </a>
       </div>
     </header>
   );
