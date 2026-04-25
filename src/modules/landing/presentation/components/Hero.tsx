@@ -22,7 +22,7 @@ export function Hero() {
             I sell handmade candles with organic essential oils...
           </p>
         </div>
-        <button className="bg-primary-container text-on-primary rounded-full w-12 h-12 flex items-center justify-center shadow-[0_2px_12px_rgba(244,97,78,0.3)] hover:scale-105 transition-transform flex-shrink-0">
+        <button className="bg-primary-container text-on-primary rounded-full w-12 h-12 flex items-center justify-center shadow-[0_2px_12px_rgba(244,97,78,0.3)] hover:scale-105 transition-transform shrink-0">
           <span className="material-symbols-outlined">arrow_upward</span>
         </button>
       </div>

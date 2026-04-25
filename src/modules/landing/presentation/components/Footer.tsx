@@ -3,7 +3,7 @@ import React from "react";
 export function Footer() {
   return (
     <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/20 py-xl px-lg md:px-xl">
-      <div className="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-md">
+      <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-md">
         <div className="flex items-center gap-sm">
           <span className="material-symbols-outlined icon-fill text-outline">
             magic_button

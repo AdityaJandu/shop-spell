@@ -12,7 +12,7 @@ export function LandingPage() {
       <Header />
 
       {/* Main Content Canvas */}
-      <main className="flex-grow flex flex-col items-center justify-center w-full max-w-[1280px] mx-auto px-gutter pt-24 pb-32">
+      <main className="grow flex flex-col items-center justify-center w-full max-w-container-max mx-auto px-gutter pt-24 pb-32">
         <Hero />
         <BrowserMockup />
         <HowItWorks />

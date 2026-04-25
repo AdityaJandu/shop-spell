@@ -51,7 +51,7 @@ export function SignupForm() {
 
       <div className="mt-sm flex flex-col gap-md">
         <button
-          className="bg-primary-container text-on-primary rounded-full font-label-caps text-label-caps uppercase py-[16px] px-lg w-full flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all tracking-widest shadow-[0_2px_12px_rgba(244,97,78,0.2)]"
+          className="bg-primary-container text-on-primary rounded-full font-label-caps text-label-caps uppercase py-md px-lg w-full flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all tracking-widest shadow-[0_2px_12px_rgba(244,97,78,0.2)]"
           type="button"
         >
           Get Started

@@ -79,7 +79,7 @@ export function BrowserMockup() {
                   width={800}
                   height={600}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-surface-container-lowest to-transparent"></div>
                 <div className="absolute top-4 left-6 font-h3 text-h3 font-bold text-on-surface">
                   Lumina
                 </div>
