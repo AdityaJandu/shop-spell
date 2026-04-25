@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 
 export function BrowserMockup() {
   return (
@@ -41,14 +42,14 @@ export function BrowserMockup() {
               {/* AI Response */}
               <div className="bg-surface-container p-md rounded-2xl rounded-tl-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] self-start max-w-[90%]">
                 <p className="font-body-md text-body-md text-on-background mb-sm">
-                  I've generated a warm, minimalist layout utilizing our 'Editorial' theme block. I added a gallery for your candle collections.
+                  I&apos;ve generated a warm, minimalist layout utilizing our &apos;Editorial&apos; theme block. I added a gallery for your candle collections.
                 </p>
                 <div className="bg-surface-container-lowest rounded-lg p-sm flex items-center gap-sm border border-outline-variant/30">
                   <span className="material-symbols-outlined text-secondary">
                     check_circle
                   </span>
                   <span className="font-code text-code text-on-surface-variant">
-                    Applied 'Warm Editorial' palette
+                    Applied &apos;Warm Editorial&apos; palette
                   </span>
                 </div>
               </div>
@@ -71,10 +72,12 @@ export function BrowserMockup() {
             {/* Simulated Storefront */}
             <div className="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col h-full border border-outline-variant/20">
               <div className="h-48 bg-surface-container w-full relative">
-                <img
+                <Image
                   alt="artisanal handmade candle burning on a clean marble surface"
                   className="w-full h-full object-cover opacity-80 mix-blend-multiply"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeEaDLRDc3rGTvLUu3TjR8gewnWPla_C-JH5oty1IkvKdr5qtoPwoAn1U8HcV5645xHXQVhqE9Kb9pKPpr9UKhDpRGrUZtSwF1Y-CGwaJxxFkwroBb51ZlvXq9IoHCli5I53tR-RpRdrsAmSYMR2dPNH3675EB_V0MehmDgR9Ki8XavVe3x-G11UHSurR3dLe53uYDykclQZUrqj_Bf73CANL3oPgUaul1uTjGGIeFk8l92CgzZLh7n0bbcI5Oo9AeVm-VyVgTm2M"
+                  width={800}
+                  height={600}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
                 <div className="absolute top-4 left-6 font-h3 text-h3 font-bold text-on-surface">

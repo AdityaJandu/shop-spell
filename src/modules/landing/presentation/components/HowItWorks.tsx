@@ -42,8 +42,8 @@ export function HowItWorks() {
             Tweak and iterate
           </h3>
           <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-            Review the live preview. Ask for changes like "make it warmer" or
-            "add a newsletter signup" and watch it update instantly.
+            Review the live preview. Ask for changes like &quot;make it warmer&quot; or
+            &quot;add a newsletter signup&quot; and watch it update instantly.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export function HowItWorks() {
           </h3>
           <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
             Connect your domain, add your payment details securely, and click
-            publish. You're ready to accept orders.
+            publish. You&apos;re ready to accept orders.
           </p>
         </div>
       </div>
