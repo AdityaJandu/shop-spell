@@ -58,9 +58,10 @@
   --spacing-unit: 4px;
   --spacing-sm: 8px;
   --spacing-xl: 40px;
-  --spacing-container-max: 1280px;
-  --spacing-xs: 4px;
   --spacing-lg: 24px;
+  --spacing-xs: 4px;
+
+  --max-width-container-max: 1280px;
 
   --font-h1: var(--font-plus-jakarta-sans);
   --font-body-lg: var(--font-plus-jakarta-sans);
