@@ -12,10 +12,11 @@ export async function Header() {
 
   const navItems = isLoggedIn
     ? [
-      { name: "Explore", href: "/analytics", requireAuth: true },
+      { name: "Explore", href: "/explore", requireAuth: true },
       { name: "Create Store", href: "/onboarding", requireAuth: true },
     ]
     : [
+      { name: "Explore", href: "/explore", requireAuth: false },
       { name: "Features", href: "/#features", requireAuth: false },
       { name: "Pricing", href: "/#pricing", requireAuth: false },
       { name: "Showcase", href: "/#showcase", requireAuth: false },
