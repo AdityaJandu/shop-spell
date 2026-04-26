@@ -1,164 +1,243 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-const orderData = [
-  {
-    id: "#ORD-9082",
-    initials: "EJ",
-    customer: "Eleanor James",
-    items: "3 items",
-    total: "$245.00",
-    paymentStatus: "Paid",
-    fulfillmentStatus: "New",
-    time: "10 mins ago",
-    fulfillmentClass:
-      "bg-error-container text-on-primary-container border-[#ffb4a8]",
-  },
-  {
-    id: "#ORD-9081",
-    initials: "MC",
-    customer: "Marcus Chen",
-    items: "1 item",
-    total: "$89.50",
-    paymentStatus: "Paid",
-    fulfillmentStatus: "Dispatched",
-    time: "2 hrs ago",
-    fulfillmentClass:
-      "bg-surface-container text-on-surface-variant border-outline-variant/30",
-  },
-  {
-    id: "#ORD-9080",
-    initials: "SO",
-    customer: "Sarah O'Connor",
-    items: "5 items",
-    total: "$412.00",
-    paymentStatus: "Pending",
-    fulfillmentStatus: "New",
-    time: "5 hrs ago",
-    fulfillmentClass:
-      "bg-error-container text-on-primary-container border-[#ffb4a8]",
-  },
-  {
-    id: "#ORD-9079",
-    initials: "DP",
-    customer: "David Palmer",
-    items: "2 items",
-    total: "$156.00",
-    paymentStatus: "Paid",
-    fulfillmentStatus: "Delivered",
-    time: "Yesterday",
-    fulfillmentClass:
-      "bg-surface-container text-on-surface-variant border-outline-variant/30",
-  },
-];
+import { cn } from "@/lib/utils";
 
-export function OrdersTable() {
+type Props = {
+  storeId: string;
+  status: string | undefined;
+  dateRange: string | undefined;
+};
+
+const statusStyles: Record<string, string> = {
+  New: "bg-red-50 text-red-600 border-red-200",
+  Processing: "bg-blue-50 text-blue-600 border-blue-200",
+  Shipped: "bg-purple-50 text-purple-600 border-purple-200",
+  Delivered: "bg-green-50 text-green-600 border-green-200",
+  Refunded: "bg-gray-100 text-gray-600 border-gray-200",
+};
+
+const nextStatusMap: Record<string, string[]> = {
+  New: ["Processing", "Refunded"],
+  Processing: ["Shipped", "Refunded"],
+  Shipped: ["Delivered", "Refunded"],
+  Delivered: ["Refunded"],
+  Refunded: [],
+};
+
+export function OrdersTable({ storeId, status, dateRange }: Props) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+  const [cursor, setCursor] = useState(0);
+  const limit = 10;
+
+  const { data, isLoading } = useQuery(
+    trpc.order.listStoreOrders.queryOptions({
+      storeId,
+      status: status as any,
+      dateRange,
+      cursor,
+      limit,
+    })
+  );
+
+  const updateStatusMutation = useMutation(
+    trpc.order.updateOrderStatus.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.order.listStoreOrders.queryKey() });
+        queryClient.invalidateQueries({ queryKey: trpc.order.getRecentOrders.queryKey() });
+        toast.success("Order status updated");
+      },
+      onError: (err) => toast.error(err.message),
+    })
+  );
+
+  const orders = data?.items ?? [];
+
+  if (isLoading) {
+    return (
+      <Card className="rounded-2xl border-none shadow-sm">
+        <div className="p-6 space-y-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <Card className="rounded-2xl border-none shadow-sm">
+        <div className="py-16 flex flex-col items-center justify-center">
+          <span className="material-symbols-outlined text-[85px] text-primary mb-3">
+            receipt_long
+          </span>
+          <h3 className="text-xl font-medium">No orders found</h3>
+          <p className="text-md text-muted-foreground text-center">
+            {status
+              ? `No ${status.toLowerCase()} orders in this period.`
+              : "Orders will appear here once customers place them."}
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="bg-surface-container-lowest rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden border-none">
+    <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-surface-variant">
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Order ID
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Customer
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Items
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Total
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Payment
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold">
-                Fulfillment
-              </th>
-              <th className="px-6 py-5 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest font-semibold text-right">
-                Time
-              </th>
+            <tr className="border-b text-xs text-muted-foreground uppercase tracking-wide">
+              <th className="px-6 py-4 text-left">Order</th>
+              <th className="px-6 py-4 text-left">Customer</th>
+              <th className="px-6 py-4 text-left">Items</th>
+              <th className="px-6 py-4 text-left">Total</th>
+              <th className="px-6 py-4 text-left">Status</th>
+              <th className="px-6 py-4 text-right">Date</th>
             </tr>
           </thead>
-          <tbody className="font-body-md text-body-md">
-            {orderData.map((order, i) => (
-              <tr
-                key={i}
-                className="border-b border-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer group last:border-0"
-              >
-                <td className="px-6 py-5">
-                  <span className="font-code text-code text-primary-container font-medium">
-                    {order.id}
-                  </span>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface font-bold text-xs">
-                      {order.initials}
+
+          <tbody>
+            {orders.map((order) => {
+              const date = new Date(order.createdAt);
+              const formattedDate = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
+
+              const initials = (order.customerName || "?")
+                .split(" ")
+                .map((w: string) => w[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2);
+
+              const possibleNext = nextStatusMap[order.status] ?? [];
+
+              return (
+                <tr
+                  key={order.id}
+                  className="border-b last:border-0 hover:bg-muted/30 transition-colors"
+                >
+                  {/* Order ID */}
+                  <td className="px-6 py-4 font-mono text-primary">
+                    #{order.id.slice(0, 6).toUpperCase()}
+                  </td>
+
+                  {/* Customer */}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
+                        {initials}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {order.customerName || "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {order.customerEmail}
+                        </span>
+                      </div>
                     </div>
-                    <span className="font-medium text-on-surface">
-                      {order.customer}
-                    </span>
-                  </div>
-                </td>
-                <td className="px-6 py-5 text-on-surface-variant">
-                  {order.items}
-                </td>
-                <td className="px-6 py-5 font-medium text-on-surface">
-                  {order.total}
-                </td>
-                <td className="px-6 py-5">
-                  {order.paymentStatus === "Paid" ? (
-                    <span className="inline-flex items-center gap-1.5 bg-[#e8f7f6] text-secondary font-label-caps text-[10px] px-2.5 py-1 rounded-full border border-[#b2e5e1]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>{" "}
-                      Paid
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 bg-surface-container text-on-surface-variant font-label-caps text-[10px] px-2.5 py-1 rounded-full border border-outline-variant/30">
-                      Pending
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-5">
-                  <span
-                    className={`inline-flex items-center gap-1.5 font-label-caps text-[10px] px-2.5 py-1 rounded-full border ${order.fulfillmentClass}`}
-                  >
-                    {order.fulfillmentStatus}
-                  </span>
-                </td>
-                <td className="px-6 py-5 text-on-surface-variant text-sm text-right">
-                  {order.time}
-                </td>
-              </tr>
-            ))}
+                  </td>
+
+                  {/* Items */}
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {(order as any).items?.length ?? 0}
+                  </td>
+
+                  {/* Total */}
+                  <td className="px-6 py-4 font-medium">
+                    ${Number(order.totalAmount).toFixed(2)}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-6 py-4">
+                    <div className="relative group">
+                      <span
+                        className={cn(
+                          "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border cursor-pointer",
+                          statusStyles[order.status]
+                        )}
+                      >
+                        {order.status}
+                        {possibleNext.length > 0 && (
+                          <span className="material-symbols-outlined text-[12px]">
+                            expand_more
+                          </span>
+                        )}
+                      </span>
+
+                      {possibleNext.length > 0 && (
+                        <div className="absolute top-full left-0 mt-2 w-40 bg-white border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition">
+                          {possibleNext.map((s) => (
+                            <button
+                              key={s}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateStatusMutation.mutate({
+                                  orderId: order.id,
+                                  status: s as any,
+                                });
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                            >
+                              Move to <span className="font-medium">{s}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Date */}
+                  <td className="px-6 py-4 text-right text-muted-foreground">
+                    {formattedDate}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Pagination */}
-      <div className="px-6 py-4 border-t border-surface-variant flex items-center justify-between">
-        <span className="text-sm text-on-surface-variant">
-          Showing 1 to 4 of 48 orders
+      <div className="px-6 py-4 border-t flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">
+          Showing {orders.length} orders
         </span>
+
         <div className="flex gap-2">
-          <button className="w-8 h-8 flex items-center justify-center rounded-full border border-surface-variant text-outline cursor-not-allowed">
+          <button
+            onClick={() => setCursor(Math.max(0, cursor - limit))}
+            disabled={cursor === 0}
+            className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted disabled:opacity-40"
+          >
             <span className="material-symbols-outlined text-sm">
               chevron_left
             </span>
           </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-full bg-primary-container text-white font-medium text-sm">
-            1
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-full border border-surface-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-colors text-sm">
-            2
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-full border border-surface-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-colors text-sm">
-            3
-          </button>
-          <button className="w-8 h-8 flex items-center justify-center rounded-full border border-surface-variant text-on-surface-variant hover:border-primary-container hover:text-primary-container transition-colors">
+
+          <button
+            onClick={() => data?.nextCursor != null && setCursor(data.nextCursor)}
+            disabled={data?.nextCursor == null}
+            className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted disabled:opacity-40"
+          >
             <span className="material-symbols-outlined text-sm">
               chevron_right
             </span>
