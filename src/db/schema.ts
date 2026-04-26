@@ -3,6 +3,11 @@ import {
     pgTable,
     pgEnum,
     text,
+    varchar,
+    integer,
+    numeric,
+    json,
+    serial,
     timestamp,
     boolean,
     index,
@@ -15,6 +20,19 @@ import {
 export const userRoleEnum = pgEnum("user_role", [
     "seller",
     "admin",
+]);
+
+export const orderStatusEnum = pgEnum("order_status", [
+    "New",
+    "Processing",
+    "Shipped",
+    "Delivered",
+    "Refunded",
+]);
+
+export const discountTypeEnum = pgEnum("discount_type", [
+    "percentage",
+    "fixed",
 ]);
 
 // ─── BetterAuth Core Tables (DO NOT MODIFY STRUCTURE) ─────────────────────────
@@ -135,6 +153,134 @@ export const sellerProfiles = pgTable(
     ],
 );
 
+// ─── Stores ───────────────────────────────────────────────────────────────────
+
+export const stores = pgTable(
+    "stores",
+    {
+        id: varchar("id", { length: 36 }).primaryKey(),
+        ownerId: varchar("owner_id", { length: 36 }).notNull(),
+        name: varchar("name", { length: 255 }).notNull(),
+        description: text("description"),
+        logoUrl: text("logo_url"),
+        bannerUrl: text("banner_url"),
+        stitchProjectId: varchar("stitch_project_id", { length: 255 }),
+        designTokens: json("design_tokens").$type<Record<string, string>>(),
+        isPublic: boolean("is_public").default(true).notNull(),
+        primaryColor: varchar("primary_color", { length: 7 }),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+        updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    },
+    (t) => ({ ownerIdx: index("stores_owner_idx").on(t.ownerId) })
+);
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+
+export const products = pgTable(
+    "products",
+    {
+        id: varchar("id", { length: 36 }).primaryKey(),
+        storeId: varchar("store_id", { length: 36 })
+            .notNull()
+            .references(() => stores.id, { onDelete: "cascade" }),
+        name: varchar("name", { length: 255 }).notNull(),
+        description: text("description"),
+        price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+        stock: integer("stock").notNull().default(0),
+        category: varchar("category", { length: 100 }),
+        imageUrls: json("image_urls").$type<string[]>().default([]),
+        isActive: boolean("is_active").default(true).notNull(),
+        totalSold: integer("total_sold").default(0).notNull(),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+        updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    },
+    (t) => ({
+        storeIdx: index("products_store_idx").on(t.storeId),
+        categoryIdx: index("products_category_idx").on(t.category),
+    })
+);
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+export const orders = pgTable(
+    "orders",
+    {
+        id: varchar("id", { length: 36 }).primaryKey(),
+        storeId: varchar("store_id", { length: 36 })
+            .notNull()
+            .references(() => stores.id, { onDelete: "cascade" }),
+        customerId: varchar("customer_id", { length: 36 }),
+        customerEmail: varchar("customer_email", { length: 255 }),
+        customerName: varchar("customer_name", { length: 255 }),
+        status: orderStatusEnum("status").default("New").notNull(),
+        totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+        couponCode: varchar("coupon_code", { length: 50 }),
+        discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).default("0"),
+        notes: text("notes"),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+        updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    },
+    (t) => ({
+        storeIdx: index("orders_store_idx").on(t.storeId),
+        statusIdx: index("orders_status_idx").on(t.status),
+        createdAtIdx: index("orders_created_at_idx").on(t.createdAt),
+    })
+);
+
+export const orderItems = pgTable("order_items", {
+    id: serial("id").primaryKey(),
+    orderId: varchar("order_id", { length: 36 })
+        .notNull()
+        .references(() => orders.id, { onDelete: "cascade" }),
+    productId: varchar("product_id", { length: 36 })
+        .notNull()
+        .references(() => products.id),
+    productName: varchar("product_name", { length: 255 }).notNull(),
+    quantity: integer("quantity").notNull(),
+    unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+});
+
+// ─── Coupons ──────────────────────────────────────────────────────────────────
+
+export const coupons = pgTable(
+    "coupons",
+    {
+        id: varchar("id", { length: 36 }).primaryKey(),
+        storeId: varchar("store_id", { length: 36 })
+            .notNull()
+            .references(() => stores.id, { onDelete: "cascade" }),
+        code: varchar("code", { length: 50 }).notNull(),
+        discountAmount: numeric("discount_amount", { precision: 10, scale: 2 }).notNull(),
+        discountType: discountTypeEnum("discount_type").notNull(),
+        maxUses: integer("max_uses").notNull(),
+        currentUses: integer("current_uses").default(0).notNull(),
+        expiryDate: timestamp("expiry_date"),
+        isActive: boolean("is_active").default(true).notNull(),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (t) => ({
+        storeIdx: index("coupons_store_idx").on(t.storeId),
+        codeIdx: index("coupons_code_idx").on(t.code),
+    })
+);
+
+// ─── Chat Messages ────────────────────────────────────────────────────────────
+
+export const chatMessages = pgTable(
+    "chat_messages",
+    {
+        id: serial("id").primaryKey(),
+        storeId: varchar("store_id", { length: 36 })
+            .notNull()
+            .references(() => stores.id, { onDelete: "cascade" }),
+        role: varchar("role", { length: 10 }).$type<"user" | "assistant">().notNull(),
+        content: text("content").notNull(),
+        toolCalls: json("tool_calls").$type<unknown[]>(),
+        createdAt: timestamp("created_at").defaultNow().notNull(),
+    },
+    (t) => ({ storeIdx: index("chat_store_idx").on(t.storeId) })
+);
+
 // ─── Relations ────────────────────────────────────────────────────────────────
 
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -160,17 +306,51 @@ export const accountRelations = relations(account, ({ one }) => ({
     }),
 }));
 
-export const sellerProfileRelations = relations(sellerProfiles, ({ one }) => ({
+export const sellerProfileRelations = relations(sellerProfiles, ({ one, many }) => ({
     user: one(user, {
         fields: [sellerProfiles.userId],
         references: [user.id],
     }),
-    // stores relation will be added when we create the stores schema
+}));
+
+export const storesRelations = relations(stores, ({ many }) => ({
+    products: many(products),
+    orders: many(orders),
+    coupons: many(coupons),
+    chatMessages: many(chatMessages),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+    store: one(stores, { fields: [products.storeId], references: [stores.id] }),
+    orderItems: many(orderItems),
+}));
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+    store: one(stores, { fields: [orders.storeId], references: [stores.id] }),
+    items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+    order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
+    product: one(products, { fields: [orderItems.productId], references: [products.id] }),
+}));
+
+export const couponsRelations = relations(coupons, ({ one }) => ({
+    store: one(stores, { fields: [coupons.storeId], references: [stores.id] }),
 }));
 
 // ─── Exported Types ───────────────────────────────────────────────────────────
 
-export type User = typeof user.$inferSelect
-export type NewUser = typeof user.$inferInsert
-export type SellerProfile = typeof sellerProfiles.$inferSelect
-export type NewSellerProfile = typeof sellerProfiles.$inferInsert
+export type User = typeof user.$inferSelect;
+export type NewUser = typeof user.$inferInsert;
+export type SellerProfile = typeof sellerProfiles.$inferSelect;
+export type NewSellerProfile = typeof sellerProfiles.$inferInsert;
+export type Store = typeof stores.$inferSelect;
+export type NewStore = typeof stores.$inferInsert;
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type NewOrder = typeof orders.$inferInsert;
+export type OrderItem = typeof orderItems.$inferSelect;
+export type Coupon = typeof coupons.$inferSelect;
+export type NewCoupon = typeof coupons.$inferInsert;
