@@ -254,7 +254,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
                   </span>
                 </div>
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="absolute -inset-1 bg-linear-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-opacity" />
                   <div className="relative bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm flex flex-col">
                     <textarea
                       className="w-full bg-transparent border-none p-4 font-medium text-sm placeholder:text-muted-foreground/50 focus:ring-0 outline-none resize-none min-h-[100px]"

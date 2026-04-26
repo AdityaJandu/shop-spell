@@ -123,7 +123,7 @@ export function ProductGrid({ storeId, search }: Props) {
                 )}
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition" />
 
                 {/* Edit button */}
                 <button

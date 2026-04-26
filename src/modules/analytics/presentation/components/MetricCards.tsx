@@ -62,7 +62,7 @@ function MiniSparkline({ positive }: { positive: boolean }) {
     : "M0,4 C10,6 15,14 25,10 C30,8 35,16 40,18 L40,24 L0,24 Z";
 
   return (
-    <div className="relative flex-shrink-0 w-[40px] h-[22px]">
+    <div className="relative shrink-0 w-xl h-[22px]">
       <style>{`
         @keyframes drawSparkline {
           to { stroke-dashoffset: 0; }
@@ -171,14 +171,14 @@ export function MetricCards({ storeId, dateRange }: Props) {
         return (
           <div
             key={metric.key}
-            className="group relative bg-gradient-to-b from-surface-container-lowest to-surface-container-lowest/80 rounded-[20px] border border-outline-variant/40 p-5 flex flex-col gap-4 hover:-translate-y-1 hover:border-outline-variant/60 hover:shadow-[0_8px_24px_-6px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden"
+            className="group relative bg-linear-to-b from-surface-container-lowest to-surface-container-lowest/80 rounded-[20px] border border-outline-variant/40 p-5 flex flex-col gap-4 hover:-translate-y-1 hover:border-outline-variant/60 hover:shadow-[0_8px_24px_-6px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden"
           >
             {/* Subtle background accent that expands on hover */}
             <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-1/2 translate-x-1/2 opacity-[0.06] group-hover:scale-150 group-hover:opacity-[0.08] transition-all duration-500 ease-out ${metric.iconBg}`} />
 
             {/* Top row: icon + label */}
             <div className="flex items-start justify-between relative z-10">
-              <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-sm border border-white/20 ${metric.iconBg}`}>
+              <div className={`w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 shadow-sm border border-white/20 ${metric.iconBg}`}>
                 <span className={`material-symbols-outlined text-[20px] ${metric.iconColor}`} style={{ fontVariationSettings: "'wght' 400, 'FILL' 1" }}>
                   {metric.icon}
                 </span>

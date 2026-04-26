@@ -23,7 +23,7 @@ export function TopPerformer({ storeId, dateRange }: Props) {
             <Skeleton className="h-5 w-28 rounded" />
             <Skeleton className="h-5 w-20 rounded-full" />
           </div>
-          <div className="flex-grow flex items-center justify-center py-xl">
+          <div className="grow flex items-center justify-center py-xl">
             <Skeleton className="w-32 h-32 rounded-full" />
           </div>
           <div className="text-center space-y-2">
@@ -61,7 +61,7 @@ export function TopPerformer({ storeId, dateRange }: Props) {
             #{data.totalQuantitySold} Sold
           </Badge>
         </div>
-        <div className="flex-grow flex flex-col justify-center items-center py-xl bg-surface-container-low rounded-xl mb-md overflow-hidden relative">
+        <div className="grow flex flex-col justify-center items-center py-xl bg-surface-container-low rounded-xl mb-md overflow-hidden relative">
           <div className="w-32 h-32 rounded-full bg-surface-container-highest shadow-inner flex items-center justify-center relative z-10 overflow-hidden">
             {data.imageUrl ? (
               <img

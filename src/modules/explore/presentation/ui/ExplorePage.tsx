@@ -60,7 +60,7 @@ export function ExplorePage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
 
-      <main className="flex-grow w-full max-w-7xl mx-auto px-6 md:px-10 py-12 md:py-20 flex flex-col gap-12">
+      <main className="grow w-full max-w-7xl mx-auto px-6 md:px-10 py-12 md:py-20 flex flex-col gap-12">
 
         {/* Explore Hero Header */}
         <section className="bg-surface-container-low rounded-[2rem] p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 shadow-sm border border-border/50 relative overflow-hidden">

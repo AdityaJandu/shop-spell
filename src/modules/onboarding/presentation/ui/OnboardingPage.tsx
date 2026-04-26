@@ -61,7 +61,7 @@ export function OnboardingPage() {
                   progress_activity
                 </span>
               </div>
-              <div className="absolute inset-0 w-16 h-16 rounded-full bg-gradient-to-r from-primary-container/30 to-secondary/30 blur-xl animate-pulse" />
+              <div className="absolute inset-0 w-16 h-16 rounded-full bg-linear-to-r from-primary-container/30 to-secondary/30 blur-xl animate-pulse" />
             </div>
             <div className="space-y-1">
               <p className="font-medium text-on-surface">Building your store...</p>

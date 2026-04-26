@@ -158,7 +158,7 @@ export function CouponsTable({ storeId, search = "" }: Props) {
                     key={coupon.id}
                     className={cn(
                       "border-b border-surface-variant/20 hover:bg-surface-variant/10 transition-colors duration-200 group last:border-0",
-                      isInactive && "opacity-60 hover:opacity-80 grayscale-[20%]"
+                      isInactive && "opacity-60 hover:opacity-80 grayscale-20"
                     )}
                   >
                     <td className="px-6 py-4">

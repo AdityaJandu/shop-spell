@@ -67,7 +67,7 @@ export default function ChatPage() {
       {/* Chat Header */}
       <div className="px-6 md:px-10 py-4 border-b border-surface-variant flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-container to-secondary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-container to-secondary flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-xl icon-fill">auto_fix_high</span>
           </div>
           <div>
@@ -100,7 +100,7 @@ export default function ChatPage() {
             </div>
           ) : messages.length === 0 && !sendMutation.isPending ? (
             <div className="flex flex-col items-center justify-center py-16 text-center w-full">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-container/20 to-secondary/20 flex items-center justify-center mb-6">
+              <div className="w-20 h-20 rounded-full bg-linear-to-br from-primary-container/20 to-secondary/20 flex items-center justify-center mb-6">
                 <span className="material-symbols-outlined text-4xl text-primary-container icon-fill">
                   auto_fix_high
                 </span>
@@ -175,7 +175,7 @@ export default function ChatPage() {
       <div className="px-6 md:px-10 py-4 border-t border-surface-variant bg-background">
         <div className="max-w-3xl mx-auto">
           <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-container/5 to-secondary/5 rounded-2xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-linear-to-r from-primary-container/5 to-secondary/5 rounded-2xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
             <div className="relative flex items-end bg-surface-container-low rounded-2xl p-2">
               <textarea
                 value={input}
@@ -188,7 +188,7 @@ export default function ChatPage() {
                 }}
                 placeholder="Ask about your store..."
                 rows={1}
-                className="flex-1 bg-transparent border-none resize-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none max-h-32 min-h-[40px]"
+                className="flex-1 bg-transparent border-none resize-none px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none max-h-32 min-h-xl"
                 style={{ height: "auto" }}
               />
               <Button
