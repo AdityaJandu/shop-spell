@@ -1,19 +1,67 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 
-export function CouponsHeader() {
+type Props = {
+  storeId: string;
+  search?: string;
+  onSearchChange?: (value: string) => void;
+  onCreateClick: () => void;
+};
+
+export function CouponsHeader({ storeId, search, onSearchChange, onCreateClick }: Props) {
+  const trpc = useTRPC();
+  const { data: coupons } = useQuery(
+    trpc.coupon.listCoupons.queryOptions({ storeId })
+  );
+
+  const activeCount = coupons?.filter((c) => !c.isExpired && !c.isExhausted).length ?? 0;
+
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-10">
+
+      {/* Left: Title & Badge */}
       <div className="flex items-center gap-4">
-        <h1 className="font-h1 text-h1 text-on-surface">Coupons</h1>
-        <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps">
-          4 Active
+        <h1 className="text-3xl font-bold tracking-tight text-on-background">
+          Coupons
+        </h1>
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30">
+          {activeCount} active
         </span>
       </div>
-      <Button className="bg-primary-container text-white rounded-full px-6 py-3 font-body-md text-body-md font-semibold hover:bg-primary-container/90 transition-opacity shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex items-center gap-2 self-start md:self-auto h-auto">
-        <span className="material-symbols-outlined text-[20px]">add</span>
-        Create Coupon
-      </Button>
+
+      {/* Right: Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+
+        {/* Search - Optional if search props are provided */}
+        {onSearchChange !== undefined && (
+          <div className="relative w-full sm:w-72">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
+              search
+            </span>
+            <Input
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search coupons..."
+              className="h-11 w-full rounded-xl pl-10 pr-3 bg-surface-container-low border border-outline-variant/30 focus-visible:ring-1 focus-visible:ring-primary/40 transition"
+            />
+          </div>
+        )}
+
+        <Button
+          onClick={onCreateClick}
+          className="h-11 px-5 rounded-xl bg-primary text-white font-medium flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            add
+          </span>
+          Add Coupon
+        </Button>
+      </div>
     </div>
   );
 }
