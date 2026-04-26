@@ -7,12 +7,12 @@ import { Footer } from "../components/Footer";
 
 export function LandingPage() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-background">
       {/* Navigation Header */}
       <Header />
 
-      {/* Main Content Canvas */}
-      <main className="grow flex flex-col items-center justify-center w-full max-w-container-max mx-auto px-gutter pt-24 pb-32">
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center w-full max-w-7xl mx-auto px-6 md:px-10 pb-32">
         <Hero />
         <BrowserMockup />
         <HowItWorks />
@@ -20,6 +20,6 @@ export function LandingPage() {
 
       {/* Footer */}
       <Footer />
-    </>
+    </div>
   );
 }

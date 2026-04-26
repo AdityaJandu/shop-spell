@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono, Geist, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const spaceGroteskHeading = Space_Grotesk({subsets:['latin'],variable:'--font-heading'});
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -25,7 +30,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", plusJakartaSans.variable, jetBrainsMono.variable, "font-sans", geist.variable, spaceGroteskHeading.variable)}
     >
       <head>
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -34,7 +39,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col font-h1 bg-background text-on-background">
+      <body className="min-h-screen flex flex-col font-sans bg-background text-foreground">
         {children}
       </body>
     </html>

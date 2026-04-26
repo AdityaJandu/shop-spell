@@ -1,125 +1,131 @@
 import React from "react";
 import Image from "next/image";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Sparkles, Lock, CheckCircle2, Send, Search, ShoppingBag } from "lucide-react";
 
 export function BrowserMockup() {
   return (
     <section className="w-full mt-32 px-4 md:px-0">
-      <div className="w-full bg-surface-container-lowest rounded-[24px] shadow-[0_12px_40px_rgba(0,0,0,0.1)] border border-outline-variant/50 overflow-hidden flex flex-col h-[600px]">
+      <Card className="w-full bg-card rounded-[32px] shadow-2xl border-border/50 overflow-hidden flex flex-col h-[750px]">
         {/* Browser Header */}
-        <div className="h-12 bg-surface-container-low border-b border-outline-variant/30 flex items-center px-lg gap-2">
-          <div className="w-3 h-3 rounded-full bg-outline-variant"></div>
-          <div className="w-3 h-3 rounded-full bg-outline-variant"></div>
-          <div className="w-3 h-3 rounded-full bg-outline-variant"></div>
-          <div className="mx-auto bg-surface-container-lowest rounded-full px-8 py-1 flex items-center gap-sm border border-outline-variant/30 text-xs text-on-surface-variant font-code text-code">
-            <span className="material-symbols-outlined text-[14px]">lock</span>
-            shopspell.ai/builder
+        <div className="h-12 bg-muted/50 border-b border-border/30 flex items-center px-6 gap-2">
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-destructive/50"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+          </div>
+          <div className="mx-auto bg-background rounded-full px-8 py-1.5 flex items-center gap-2 border border-border/50 text-[11px] text-muted-foreground font-mono">
+            <Lock className="w-3 h-3" />
+            <span className="opacity-70">https://</span>shopspell.ai/builder
           </div>
         </div>
 
         {/* Split Screen Content */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-surface">
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden bg-background">
           {/* Left: Chat UI */}
-          <div className="w-full md:w-1/3 border-r border-outline-variant/30 bg-surface-container-low/50 flex flex-col p-lg">
-            <div className="flex items-center gap-sm mb-lg">
-              <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                <span className="material-symbols-outlined icon-fill text-[18px]">
-                  magic_button
-                </span>
+          <div className="w-full md:w-[380px] border-r border-border/30 bg-muted/10 flex flex-col p-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center text-on-primary shadow-xl shadow-primary-container/20">
+                <Sparkles className="w-7 h-7 fill-on-primary" />
               </div>
-              <span className="font-body-md text-body-md font-semibold text-on-background">
-                ShopSpell AI
-              </span>
+              <div>
+                <h4 className="font-bold text-foreground leading-tight text-lg">ShopSpell AI</h4>
+                <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold opacity-70">Design Partner</p>
+              </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto flex flex-col gap-md pr-2">
-              {/* User Message */}
-              <div className="bg-surface-container-lowest p-md rounded-2xl rounded-tr-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] self-end max-w-[85%] border border-outline-variant/20">
-                <p className="font-body-md text-body-md text-on-background">
-                  I need a clean, minimalist store for my artisan candles. Mostly warm tones.
-                </p>
-              </div>
+            <ScrollArea className="flex-1 -mr-2 pr-4">
+              <div className="flex flex-col gap-6">
+                {/* User Message */}
+                <div className="bg-card p-5 rounded-2xl rounded-tr-sm shadow-sm self-end max-w-[90%] border border-border/30">
+                  <p className="text-[15px] text-foreground leading-relaxed">
+                    I need a clean, minimalist store for my artisan candles. Mostly warm tones and lots of whitespace.
+                  </p>
+                </div>
 
-              {/* AI Response */}
-              <div className="bg-surface-container p-md rounded-2xl rounded-tl-sm shadow-[0_2px_8px_rgba(0,0,0,0.04)] self-start max-w-[90%]">
-                <p className="font-body-md text-body-md text-on-background mb-sm">
-                  I&apos;ve generated a warm, minimalist layout utilizing our &apos;Editorial&apos; theme block. I added a gallery for your candle collections.
-                </p>
-                <div className="bg-surface-container-lowest rounded-lg p-sm flex items-center gap-sm border border-outline-variant/30">
-                  <span className="material-symbols-outlined text-secondary">
-                    check_circle
-                  </span>
-                  <span className="font-code text-code text-on-surface-variant">
-                    Applied &apos;Warm Editorial&apos; palette
-                  </span>
+                {/* AI Response */}
+                <div className="bg-muted p-5 rounded-2xl rounded-tl-sm shadow-sm self-start max-w-[95%]">
+                  <p className="text-[15px] text-foreground mb-4 leading-relaxed">
+                    I&apos;ve generated a warm, minimalist layout utilizing our &apos;Editorial&apos; theme block. I added a gallery for your candle collections.
+                  </p>
+                  <div className="bg-background/90 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 border border-border/40 shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-secondary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Applying Theme</span>
+                      <span className="text-[11px] font-bold text-foreground">Warm Editorial palette active</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollArea>
 
-            <div className="mt-lg relative">
-              <input
-                className="w-full bg-surface-container-lowest border-none rounded-full py-3 pl-4 pr-10 shadow-[0_2px_8px_rgba(0,0,0,0.04)] font-body-md text-body-md focus:ring-2 focus:ring-primary-container outline-none"
+            <div className="mt-8 relative">
+              <Input
+                className="w-full bg-background rounded-2xl py-8 pl-6 pr-14 shadow-sm border-border/60 focus-visible:ring-primary-container transition-all text-base"
                 placeholder="Tweak the design..."
-                type="text"
               />
-              <button className="absolute right-2 top-1/2 -translate-y-1/2 text-primary-container">
-                <span className="material-symbols-outlined">send</span>
-              </button>
+              <Button size="icon" variant="ghost" className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-container hover:text-primary-container/80 hover:bg-transparent">
+                <Send className="w-6 h-6" />
+              </Button>
             </div>
           </div>
 
           {/* Right: Preview UI */}
-          <div className="w-full md:w-2/3 bg-background relative overflow-hidden flex flex-col items-center justify-center p-xl">
-            {/* Simulated Storefront */}
-            <div className="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col h-full border border-outline-variant/20">
-              <div className="h-48 bg-surface-container w-full relative">
-                <Image
-                  alt="artisanal handmade candle burning on a clean marble surface"
-                  className="w-full h-full object-cover opacity-80 mix-blend-multiply"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeEaDLRDc3rGTvLUu3TjR8gewnWPla_C-JH5oty1IkvKdr5qtoPwoAn1U8HcV5645xHXQVhqE9Kb9pKPpr9UKhDpRGrUZtSwF1Y-CGwaJxxFkwroBb51ZlvXq9IoHCli5I53tR-RpRdrsAmSYMR2dPNH3675EB_V0MehmDgR9Ki8XavVe3x-G11UHSurR3dLe53uYDykclQZUrqj_Bf73CANL3oPgUaul1uTjGGIeFk8l92CgzZLh7n0bbcI5Oo9AeVm-VyVgTm2M"
-                  width={800}
-                  height={600}
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-surface-container-lowest to-transparent"></div>
-                <div className="absolute top-4 left-6 font-h3 text-h3 font-bold text-on-surface">
-                  Lumina
+          <div className="flex-1 bg-muted/1 relative overflow-hidden flex flex-col px-6 md:px-10">
+            {/* Simulated Storefront Container */}
+            <div className="flex-1 flex items-start justify-center w-full overflow-y-auto scrollbar-hide">
+              <Card className="w-full max-w-2xl bg-card/5 rounded-t-2xl shadow-[0_40px_80px_-15px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col border-border/30 transition-all duration-500 min-h-[450px] my-4">
+                {/* Storefront Nav */}
+                <div className="h-16 flex items-center justify-between px-8">
+                  <div className="text-xl font-black text-foreground tracking-tighter uppercase">
+                    Lumina
+                  </div>
+                  <div className="flex gap-6">
+                    <Search className="w-5 h-5 text-foreground cursor-pointer opacity-40 hover:opacity-100 transition-opacity" />
+                    <ShoppingBag className="w-5 h-5 text-foreground cursor-pointer opacity-40 hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
-                <div className="absolute top-4 right-6 flex gap-4">
-                  <span className="material-symbols-outlined text-on-surface">
-                    search
-                  </span>
-                  <span className="material-symbols-outlined text-on-surface">
-                    shopping_bag
-                  </span>
-                </div>
-              </div>
 
-              <div className="p-lg flex-1 flex flex-col items-center text-center">
-                <h2 className="font-h2 text-[24px] font-bold text-on-background mb-2">
-                  Hand-poured ambiance.
-                </h2>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-xs">
-                  Crafted with organic essential oils and sustainable soy wax for a cleaner burn.
-                </p>
-                <button className="bg-on-background text-on-primary font-body-md text-body-md px-6 py-2 rounded-full">
-                  Shop Collection
-                </button>
-                <div className="w-full flex gap-sm mt-auto pt-6">
-                  <div className="flex-1 h-32 bg-surface-container rounded-lg"></div>
-                  <div className="flex-1 h-32 bg-surface-container rounded-lg"></div>
+                <div className="w-full relative h-[350px] overflow-hidden">
+                  <Image
+                    alt="artisanal handmade candle burning on a clean marble surface"
+                    className="w-full h-full object-cover"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeEaDLRDc3rGTvLUu3TjR8gewnWPla_C-JH5oty1IkvKdr5qtoPwoAn1U8HcV5645xHXQVhqE9Kb9pKPpr9UKhDpRGrUZtSwF1Y-CGwaJxxFkwroBb51ZlvXq9IoHCli5I53tR-RpRdrsAmSYMR2dPNH3675EB_V0MehmDgR9Ki8XavVe3x-G11UHSurR3dLe53uYDykclQZUrqj_Bf73CANL3oPgUaul1uTjGGIeFk8l92CgzZLh7n0bbcI5Oo9AeVm-VyVgTm2M"
+                    width={1200}
+                    height={800}
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-card via-transparent to-transparent opacity-60"></div>
                 </div>
-              </div>
+
+                <div className="px-8 md:px-12 flex flex-col items-center text-center">
+                  <h2 className="text-3xl md:text-5xl font-extrabold text-foreground mb-6 tracking-tight leading-[1.1]">
+                    Hand-poured ambiance.
+                  </h2>
+                  <p className="text-lg text-muted-foreground max-w-[450px] leading-relaxed opacity-80">
+                    Crafted with organic essential oils and sustainable soy wax for a cleaner, longer-lasting burn.
+                  </p>
+                </div>
+              </Card>
             </div>
 
             {/* Floating status indicator */}
-            <div className="absolute top-6 right-6 bg-surface-container-lowest rounded-full px-4 py-2 shadow-md flex items-center gap-2 border border-outline-variant/30">
-              <span className="w-2 h-2 rounded-full bg-secondary"></span>
-              <span className="font-label-caps text-label-caps text-on-surface-variant">
+            <Badge variant="outline" className="absolute top-10 right-10 bg-card/95 backdrop-blur-xl rounded-full px-10 py-3 shadow-2xl flex items-center gap-3 border-border/50 group z-10">
+              <span className="w-3 h-3 rounded-full bg-secondary animate-pulse shadow-[0_0_12px_rgba(var(--secondary),0.6)]"></span>
+              <span className="text-[12px] uppercase tracking-[0.25em] font-black text-foreground">
                 LIVE PREVIEW
               </span>
-            </div>
+            </Badge>
           </div>
         </div>
-      </div>
+      </Card>
     </section>
   );
 }

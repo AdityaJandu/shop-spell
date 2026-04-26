@@ -1,38 +1,37 @@
-import React from "react";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/20 py-xl px-lg md:px-xl">
-      <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-md">
-        <div className="flex items-center gap-sm">
-          <span className="material-symbols-outlined icon-fill text-outline">
-            magic_button
-          </span>
-          <span className="font-h3 text-[18px] tracking-tight font-bold text-on-surface-variant">
+    <footer className="w-full bg-background border-t border-border/40 py-12 px-6 md:px-10">
+      <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-muted-foreground fill-muted-foreground/20" />
+          <span className="text-lg tracking-tight font-bold text-muted-foreground">
             ShopSpell
           </span>
         </div>
-        <div className="flex gap-lg">
-          <a
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary-container"
+        <div className="flex gap-8">
+          <Link
+            className="text-sm text-muted-foreground hover:text-primary-container transition-colors"
             href="#"
           >
             Terms
-          </a>
-          <a
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary-container"
+          </Link>
+          <Link
+            className="text-sm text-muted-foreground hover:text-primary-container transition-colors"
             href="#"
           >
             Privacy
-          </a>
-          <a
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary-container"
+          </Link>
+          <Link
+            className="text-sm text-muted-foreground hover:text-primary-container transition-colors"
             href="#"
           >
             Contact
-          </a>
+          </Link>
         </div>
-        <p className="font-code text-code text-outline">
+        <p className="text-xs text-muted-foreground/60 font-mono">
           © 2024 ShopSpell. All rights reserved.
         </p>
       </div>
