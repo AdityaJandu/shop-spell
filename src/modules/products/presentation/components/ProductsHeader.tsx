@@ -1,32 +1,71 @@
+"use client";
+
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
-export function ProductsHeader({ onAddClick }: { onAddClick: () => void }) {
+type Props = {
+  storeId: string;
+  search: string;
+  onSearchChange: (value: string) => void;
+  onAddClick: () => void;
+};
+
+export function ProductsHeader({
+  storeId,
+  search,
+  onSearchChange,
+  onAddClick,
+}: Props) {
+  const trpc = useTRPC();
+  const { data: products } = useQuery(
+    trpc.product.listStoreProducts.queryOptions({ storeId })
+  );
+
+  const totalCount = products?.length ?? 0;
+
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-      <div className="flex items-center gap-4">
-        <h1 className="font-h1 text-h1 text-on-background">Products</h1>
-        <span className="bg-surface-container text-on-surface font-label-caps text-label-caps px-3 py-1 rounded-full uppercase tracking-widest mt-2">
-          124 Total
+    <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-10">
+
+      {/* Left: Title */}
+      <div className="flex items-center justify-center gap-4">
+        <h1 className="text-3xl font-bold tracking-tight text-on-background">
+          Products
+        </h1>
+
+        {/* Count badge */}
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-surface-container text-on-surface-variant border border-outline-variant/30">
+          {totalCount} {totalCount > 1 ? "items" : "item"}
         </span>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="relative w-full md:w-64">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">
+
+      {/* Right: Controls */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+
+        {/* Search */}
+        <div className="relative w-full sm:w-72">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
             search
           </span>
+
           <Input
-            className="w-full h-12 bg-surface-container-low rounded-full pl-12 pr-4 font-body-md text-body-md text-on-background focus-visible:ring-1 focus-visible:ring-primary-container border-none shadow-inner"
-            placeholder="Search inventory..."
-            type="text"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search products..."
+            className="h-11 w-full rounded-xl pl-10 pr-3 bg-surface-container-low border border-outline-variant/30 focus-visible:ring-1 focus-visible:ring-primary/40 transition"
           />
         </div>
+
+        {/* Add Button */}
         <Button
           onClick={onAddClick}
-          className="h-12 px-6 rounded-full bg-primary-container text-white font-body-md text-body-md font-semibold flex items-center gap-2 hover:bg-primary-container/90 transition-opacity whitespace-nowrap shadow-[0_2px_12px_rgba(244,97,78,0.2)]"
+          className="h-11 px-5 rounded-xl bg-primary text-white font-medium flex items-center gap-2 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all"
         >
-          <span className="material-symbols-outlined">add</span>
+          <span className="material-symbols-outlined text-[18px]">
+            add
+          </span>
           Add Product
         </Button>
       </div>

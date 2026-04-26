@@ -1,77 +1,219 @@
-import React from "react";
-import Image from "next/image";
+"use client";
 
-const products = [
-  {
-    category: "Home Decor",
-    title: "Artisan Fluted Vase",
-    price: "$48.00",
-    stockStatus: "In stock (12)",
-    stockColor: "bg-secondary",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAwXpoNDFcKTofFVPe62uwozbFZ1Ne8vm5w48jpzUG1RNVaaP6PZbwQzx1tAdLxIJ5wHIRKVwNBF2Lr4MIzrfG9vxwF10i719tfQzRmGo4sQ8aZG0H0_ZaUqjHCtHfPu14P9Uz_hn0mlRYqi-k4t8kBOS4qJ6lpe9I-280sqUxntk6QrJgOFkQrfR507ir9p9QnXJr0QSnEByqw1edJ3Cs92kdaS6KgF0dlAEYjEeh8NcnfJ05EAuW9mFPWSWky2ZZ2hgNNJ1j43-o",
-  },
-  {
-    category: "Accessories",
-    title: "Matte Thermal Flask",
-    price: "$32.00",
-    stockStatus: "In stock (45)",
-    stockColor: "bg-secondary",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA9oTuAg6KM41jFzQ5ToEWUmVvF6ZXZnENt768Z5tt3di9bCCzY8Ce0U_RFe5zCz216i8DjYbOSsWoNp-0sriMPjFO9QCL4TIz2bl-nfcXUkGoG40vNzBNnWzBgialVlEYYlndkowd-8XF2JqcuVxSdoGCeX8EkVDkmgkRI3zj6wOFkgD0naUOrW4gZakNWS2BcG_SY_6qubsFWtWgw480uSaoYh82TZ9v4wZD96uObGf-iJ2BqpMgUTXzJdilwtcf7KnR_9TrJfDE",
-  },
-  {
-    category: "Lighting",
-    title: "Brass Task Lamp",
-    price: "$125.00",
-    stockStatus: "Low stock (3)",
-    stockColor: "bg-[#f4614e]",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCadEIiwdkyh3lJa5Q6yWog3FViwII3vc4C5EhjxZyaP3XBNI7Gr-pjXFqFSq0OqdX0O_YbO2rgEfUIiGu9PLqsBjqAcx_cELKG1eEamiN2XDxgmusJk_mem5FN8tG931BlnVebbjyd3P_c-gmEg1ksdcO2l85FNjFYfIJJzRwcTAGyj1t2mB4GUtHDvG1sKjaNiP2GiDzZ5s9wiy02SBHT9aaJ81Q7Hwl81B5eFrcdGdKrt9xs4MFdSL582qHUHsKG3odsScvGs_o",
-  },
-];
+import React, { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { AddProductDrawer } from "../components/AddProductDrawer";
+import { ConfirmationDialog } from "@/components/shared/ConfirmationDialog";
 
-export function ProductGrid() {
+type Props = { storeId: string; search: string };
+
+export function ProductGrid({ storeId, search }: Props) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<any | null>(null);
+
+  const { data: products, isLoading } = useQuery(
+    trpc.product.listStoreProducts.queryOptions({
+      storeId,
+      search: search || undefined,
+    })
+  );
+
+  const deleteMutation = useMutation(
+    trpc.product.deleteProduct.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.product.listStoreProducts.queryKey(),
+        });
+        toast.success("Product deleted");
+        setDeleteConfirmOpen(false);
+        setProductToDelete(null);
+      },
+      onError: (err) => {
+        toast.error(err.message);
+        setDeleteConfirmOpen(false);
+      },
+    })
+  );
+
+  function openEdit(product: any) {
+    setSelectedProduct(product);
+    setIsDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setIsDrawerOpen(false);
+    setSelectedProduct(null);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="rounded-2xl border shadow-sm overflow-hidden">
+            <Skeleton className="h-56 w-full" />
+            <div className="p-5 space-y-3">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!products || products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <span className="material-symbols-outlined text-6xl text-muted-foreground/30 mb-4">
+          inventory_2
+        </span>
+        <h3 className="text-lg font-semibold">
+          {search ? "No products found" : "No products yet"}
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-2xl">
+          {search
+            ? `No products match "${search}".`
+            : "Add your first product to start selling."}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-      {products.map((product, index) => (
-        <article
-          key={index}
-          className="bg-surface-container-lowest rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col group cursor-pointer hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-shadow duration-300"
-        >
-          <div className="h-56 bg-surface-container-low relative p-4 flex items-center justify-center overflow-hidden">
-            <Image
-              src={product.image}
-              alt={product.title}
-              width={300}
-              height={224}
-              unoptimized
-              className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-          <div className="p-5 flex flex-col gap-2">
-            <span className="font-label-caps text-label-caps text-primary-container uppercase tracking-widest">
-              {product.category}
-            </span>
-            <div className="flex justify-between items-start gap-4">
-              <h3 className="font-body-lg text-body-lg font-bold text-on-background leading-tight">
-                {product.title}
-              </h3>
-              <span className="font-body-lg text-body-lg text-on-surface-variant font-medium">
-                {product.price}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`w-2 h-2 rounded-full ${product.stockColor}`}
-              ></span>
-              <span className="font-body-md text-body-md text-on-surface-variant text-sm">
-                {product.stockStatus}
-              </span>
-            </div>
-          </div>
-        </article>
-      ))}
-    </div>
+    <>
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((product) => {
+          const price = Number(product.price);
+
+          const stock = product.stock;
+          const isOut = stock === 0;
+          const isLow = stock > 0 && stock < 5;
+
+          return (
+            <article
+              key={product.id}
+              onClick={() => openEdit(product)}
+              className="group relative rounded-2xl border bg-background overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            >
+              {/* Image */}
+              <div className="relative h-56 bg-muted overflow-hidden">
+                {product.imageUrls?.length ? (
+                  <img
+                    src={product.imageUrls[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground/30">
+                    <span className="material-symbols-outlined text-5xl">
+                      image
+                    </span>
+                  </div>
+                )}
+
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition" />
+
+                {/* Edit button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openEdit(product);
+                  }}
+                  className="absolute top-3 right-12 h-9 w-9 rounded-full bg-white/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-blue-50"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-blue-500">
+                    edit
+                  </span>
+                </button>
+
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProductToDelete(product);
+                    setDeleteConfirmOpen(true);
+                  }}
+                  className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-50"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-red-500">
+                    delete
+                  </span>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-5 flex flex-col gap-2">
+                <span className="text-xs font-medium uppercase tracking-wide text-primary">
+                  {product.category}
+                </span>
+
+                <div className="flex justify-between items-start gap-3">
+                  <h3 className="font-semibold text-base leading-snug line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <span className="font-semibold text-sm whitespace-nowrap">
+                    ${price.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 mt-2 text-sm">
+                  <span
+                    className={`w-2 h-2 rounded-full ${isOut
+                      ? "bg-red-500"
+                      : isLow
+                        ? "bg-orange-500"
+                        : "bg-green-500"
+                      }`}
+                  />
+                  <span className="text-muted-foreground">
+                    {isOut
+                      ? "Out of stock"
+                      : isLow
+                        ? `Low stock (${stock})`
+                        : `In stock (${stock})`}
+                  </span>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${productToDelete?.name}"? This action will permanently remove the product from your store.`}
+        confirmText="Delete"
+        onConfirm={() => {
+          if (productToDelete) {
+            deleteMutation.mutate({ productId: productToDelete.id });
+          }
+        }}
+        isLoading={deleteMutation.isPending}
+        variant="danger"
+      />
+
+      {/* Drawer (Create + Edit) */}
+      <AddProductDrawer
+        storeId={storeId}
+        isOpen={isDrawerOpen}
+        onClose={closeDrawer}
+        product={selectedProduct}
+      />
+    </>
   );
 }

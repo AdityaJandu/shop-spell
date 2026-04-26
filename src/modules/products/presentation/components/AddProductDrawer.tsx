@@ -1,144 +1,456 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
+"use client";
 
-export function AddProductDrawer({
-  isOpen,
-  onClose,
-}: {
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useTRPC } from "@/trpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Loader2, Sparkles, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Product } from "@/db/schema";
+
+const productSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  price: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+    message: "Price must be a positive number",
+  }),
+  stock: z.string().refine((val) => !isNaN(parseInt(val, 10)) && parseInt(val, 10) >= 0, {
+    message: "Stock must be a positive integer",
+  }),
+  category: z.string().min(1, "Category is required"),
+  description: z.string().optional(),
+});
+
+type ProductValues = z.infer<typeof productSchema>;
+
+type Props = {
+  storeId: string;
   isOpen: boolean;
   onClose: () => void;
-}) {
+  product?: Product | null;
+};
+
+const CATEGORIES = [
+  "Home Decor",
+  "Apparel",
+  "Accessories",
+  "Electronics",
+  "Lighting",
+  "Food & Drink",
+  "Art",
+  "Other",
+];
+
+export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const [aiPrompt, setAiPrompt] = useState("");
+  const isEditing = !!product;
+
+  const form = useForm<ProductValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      price: "",
+      stock: "",
+      category: "",
+      description: "",
+    },
+  });
+
+  // Populate form with default values if a product is provided
+  useEffect(() => {
+    if (isOpen) {
+      if (product) {
+        form.reset({
+          name: product.name || "",
+          price: product.price?.toString() || "",
+          stock: product.stock?.toString() || "",
+          category: product.category || "",
+          description: (product as any).description || "",
+        });
+      } else {
+        resetAll();
+      }
+    }
+  }, [isOpen, product, form]);
+
+  // 1. Mutation for Manual Product Creation
+  const createMutation = useMutation(
+    trpc.product.createProduct.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.product.listStoreProducts.queryKey() });
+        toast.success("Product created successfully!");
+        resetAll();
+        onClose();
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    })
+  );
+
+  // 2. Mutation for Manual Product Updating
+  const updateMutation = useMutation(
+    trpc.product.updateProduct.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: trpc.product.listStoreProducts.queryKey() });
+        toast.success("Product updated successfully!");
+        resetAll();
+        onClose();
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    })
+  );
+
+  // 3. Mutation for AI Assistant Product Generation
+  const aiMutation = useMutation(
+    trpc.ai.sendMessage.mutationOptions({
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: trpc.product.listStoreProducts.queryKey() });
+
+        // Check if the AI actually used the tool
+        if (data.toolsUsed && data.toolsUsed.includes("create_product")) {
+          toast.success("AI successfully generated the product!");
+        } else {
+          toast.success("AI responded, check your product list.");
+        }
+
+        resetAll();
+        onClose();
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to generate product via AI.");
+      },
+    })
+  );
+
+  function resetAll() {
+    setAiPrompt("");
+    form.reset({
+      name: "",
+      price: "",
+      stock: "",
+      category: "",
+      description: "",
+    });
+  }
+
+  function handleAiSubmit() {
+    if (!aiPrompt.trim()) return;
+
+    // Send the natural language prompt directly to the AI router.
+    // The AI will parse it and execute the `create_product` tool we built.
+    aiMutation.mutate({
+      storeId,
+      message: `Please create a product based on this description: ${aiPrompt}`,
+    });
+  }
+
+  function onSubmit(values: ProductValues) {
+    if (isEditing && product) {
+      updateMutation.mutate({
+        productId: product.id,
+        name: values.name,
+        price: parseFloat(values.price),
+        stock: parseInt(values.stock, 10),
+        category: values.category,
+        description: values.description || undefined,
+      });
+    } else {
+      createMutation.mutate({
+        storeId,
+        name: values.name,
+        price: parseFloat(values.price),
+        stock: parseInt(values.stock, 10),
+        category: values.category,
+        description: values.description || undefined,
+        imageUrls: [], // Added required array to satisfy the backend schema
+      });
+    }
+  }
+
+  const isPending = createMutation.isPending || updateMutation.isPending || aiMutation.isPending;
+
   return (
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-on-background/10 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+        className={cn(
+          "fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300",
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        )}
         onClick={onClose}
-      ></div>
+      />
 
       {/* Drawer */}
       <aside
-        className={`fixed right-0 top-0 h-full w-full max-w-[480px] bg-surface-container-lowest shadow-[-8px_0_24px_rgba(0,0,0,0.08)] z-50 flex flex-col transition-transform duration-300 ease-in-out border-l border-surface-variant ${
+        className={cn(
+          "fixed right-0 top-0 h-full w-full max-w-[520px] bg-card shadow-2xl z-50 flex flex-col transition-transform duration-500 ease-in-out border-l border-border",
           isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        )}
       >
-        {/* Drawer Header */}
-        <div className="flex items-center justify-between p-6 border-b border-surface-container-high">
+        {/* Header */}
+        <div className="flex items-center justify-between px-8 py-6 border-b border-border/50 bg-muted/20">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary-container">
-              auto_fix_high
-            </span>
-            <h2 className="font-h3 text-h3 text-on-background">Add a product</h2>
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Sparkles className="w-5 h-5 fill-primary" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">
+                {isEditing ? "Edit Product" : "Add Product"}
+              </h2>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
+                {isEditing ? "Update inventory item" : "New inventory item"}
+              </p>
+            </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors"
+            className="rounded-full hover:bg-muted transition-colors"
           >
-            <span className="material-symbols-outlined">close</span>
-          </button>
+            <X className="w-5 h-5" />
+          </Button>
         </div>
 
-        {/* Drawer Content */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
-          {/* AI Input Section */}
-          <div className="flex flex-col gap-3">
-            <label className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-              ShopSpell AI Assistant
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-container/10 to-secondary/10 rounded-xl blur-md opacity-50 group-focus-within:opacity-100 transition-opacity"></div>
-              <textarea
-                className="relative w-full bg-surface-container-low border-none rounded-xl p-4 font-body-md text-body-md text-on-background placeholder:text-stone-400 focus:ring-1 focus:ring-primary-container resize-none"
-                placeholder="Describe the product naturally... e.g. 'Add a hand-poured soy candle with cedarwood scent for $28'"
-                rows={3}
-              ></textarea>
-              <button className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center shadow-sm hover:opacity-90">
-                <span className="material-symbols-outlined text-lg">
-                  arrow_upward
-                </span>
-              </button>
-            </div>
-          </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-hide">
 
-          <div className="w-full h-px bg-surface-container-high"></div>
-
-          {/* Manual Form Fields */}
-          <form className="flex flex-col gap-6">
-            {/* Image Upload Area */}
-            <div className="w-full h-40 border-2 border-dashed border-surface-container-highest rounded-xl bg-surface-container-low flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-surface-container-high transition-colors">
-              <span className="material-symbols-outlined text-stone-400 text-3xl">
-                add_photo_alternate
-              </span>
-              <span className="font-body-md text-body-md text-stone-500 font-medium">
-                Upload product images
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                Product Name
-              </label>
-              <input
-                className="w-full h-12 bg-surface-container-low rounded-lg px-4 border-none font-body-md text-body-md text-on-background focus:ring-1 focus:ring-primary-container"
-                type="text"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Price
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md">
-                    $
+          {/* AI Assistant Section - Only show when Creating a new product */}
+          {!isEditing && (
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] text-primary/70 ml-1">
+                    ShopSpell AI Assistant
+                  </label>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Beta
                   </span>
-                  <input
-                    className="w-full h-12 bg-surface-container-low rounded-lg pl-8 pr-4 border-none font-body-md text-body-md text-on-background focus:ring-1 focus:ring-primary-container"
-                    type="text"
-                  />
+                </div>
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-2xl blur opacity-25 group-focus-within:opacity-100 transition-opacity" />
+                  <div className="relative bg-background border border-border/60 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                    <textarea
+                      className="w-full bg-transparent border-none p-4 font-medium text-sm placeholder:text-muted-foreground/50 focus:ring-0 outline-none resize-none min-h-[100px]"
+                      placeholder="Describe the product naturally... e.g. 'Add a hand-poured soy candle with cedarwood scent for $28 with 50 in stock'"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleAiSubmit();
+                        }
+                      }}
+                    />
+                    <div className="flex justify-between items-center px-4 py-3 bg-muted/30 border-t border-border/40">
+                      <span className="text-[10px] text-muted-foreground font-medium italic">
+                        AI will auto-fill stock and details
+                      </span>
+                      <Button
+                        onClick={handleAiSubmit}
+                        disabled={aiMutation.isPending || !aiPrompt.trim()}
+                        size="sm"
+                        className="h-8 w-8 rounded-full bg-primary text-primary-foreground p-0 shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                      >
+                        {aiMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                  Stock
-                </label>
-                <input
-                  className="w-full h-12 bg-surface-container-low rounded-lg px-4 border-none font-body-md text-body-md text-on-background focus:ring-1 focus:ring-primary-container"
-                  type="number"
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border/40" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] font-black text-muted-foreground">
+                  <span className="bg-card px-4">Manual Entry</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Manual Form */}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">
+                      Product Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Artisan Fluted Vase"
+                        className="h-12 rounded-xl bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/50"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[11px] font-bold" />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">
+                        Price ($)
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">
+                            $
+                          </span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            className="h-12 pl-8 rounded-xl bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/50"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-[11px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="stock"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">
+                        Stock Level
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          className="h-12 rounded-xl bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/50"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-[11px] font-bold" />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-                Category
-              </label>
-              <select className="w-full h-12 bg-surface-container-low rounded-lg px-4 border-none font-body-md text-body-md text-on-background focus:ring-1 focus:ring-primary-container appearance-none">
-                <option>Select a category...</option>
-                <option>Home Decor</option>
-                <option>Apparel</option>
-                <option>Accessories</option>
-              </select>
-            </div>
-          </form>
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">
+                      Category
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || undefined}>
+                      <FormControl>
+                        <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-border/60 focus:ring-1 focus:ring-primary/50 font-medium">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="rounded-xl border-border/60 shadow-xl">
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat} className="rounded-lg font-medium">
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-[11px] font-bold" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">
+                      Description (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell a story about this product..."
+                        className="min-h-[120px] rounded-xl bg-muted/30 border-border/60 focus-visible:ring-1 focus-visible:ring-primary/50 resize-none font-medium p-4"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-[11px] font-bold" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Hidden submit for form */}
+              <button type="submit" className="hidden" />
+            </form>
+          </Form>
         </div>
 
-        {/* Drawer Footer */}
-        <div className="p-6 border-t border-surface-container-high flex justify-end gap-3 bg-surface-container-lowest">
+        {/* Footer */}
+        <div className="p-8 border-t border-border/50 bg-muted/20 flex items-center justify-end gap-4">
           <Button
-            variant="outline"
-            onClick={onClose}
-            className="px-6 py-3 rounded-full bg-white text-on-background font-body-md text-body-md font-medium shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:bg-surface-container-low transition-colors border-none h-auto"
+            variant="ghost"
+            onClick={() => {
+              resetAll();
+              onClose();
+            }}
+            className="px-6 h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground transition-colors"
           >
             Cancel
           </Button>
           <Button
-            className="px-6 py-3 rounded-full bg-primary-container text-white font-body-md text-body-md font-semibold shadow-[0_2px_12px_rgba(244,97,78,0.2)] hover:opacity-90 transition-opacity h-auto"
+            onClick={form.handleSubmit(onSubmit)}
+            disabled={isPending}
+            className="px-8 h-12 rounded-xl bg-primary text-primary-foreground font-black shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-100 transition-all flex items-center gap-2"
           >
-            Save Product
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {isEditing ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEditing ? "Update Product" : "Save Product"
+            )}
           </Button>
         </div>
       </aside>
