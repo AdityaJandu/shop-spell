@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,10 +65,11 @@ export function TopPerformer({ storeId, dateRange }: Props) {
         <div className="grow flex flex-col justify-center items-center py-xl bg-surface-container-low rounded-xl mb-md overflow-hidden relative">
           <div className="w-32 h-32 rounded-full bg-surface-container-highest shadow-inner flex items-center justify-center relative z-10 overflow-hidden">
             {data.imageUrl ? (
-              <img
+              <Image
                 src={data.imageUrl}
                 alt={data.productName}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
             ) : (
               <span className="material-symbols-outlined text-4xl text-on-surface-variant/40">

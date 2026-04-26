@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+import { type Product } from "@/db/schema";
 import { useTRPC } from "@/trpc/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -14,11 +16,11 @@ export function ProductGrid({ storeId, search }: Props) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState<any | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   const { data: products, isLoading } = useQuery(
     trpc.product.listStoreProducts.queryOptions({
@@ -44,7 +46,7 @@ export function ProductGrid({ storeId, search }: Props) {
     })
   );
 
-  function openEdit(product: any) {
+  function openEdit(product: Product) {
     setSelectedProduct(product);
     setIsDrawerOpen(true);
   }
@@ -109,10 +111,11 @@ export function ProductGrid({ storeId, search }: Props) {
               {/* Image */}
               <div className="relative h-56 bg-muted overflow-hidden">
                 {product.imageUrls?.length ? (
-                  <img
+                  <Image
                     src={product.imageUrls[0]}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground/30">

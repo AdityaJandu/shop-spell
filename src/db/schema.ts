@@ -265,6 +265,10 @@ export const coupons = pgTable(
 );
 
 // ─── Chat Messages ────────────────────────────────────────────────────────────
+export interface ToolCallResult {
+    toolName: string;
+    result: string;
+}
 
 export const chatMessages = pgTable(
     "chat_messages",
@@ -275,7 +279,7 @@ export const chatMessages = pgTable(
             .references(() => stores.id, { onDelete: "cascade" }),
         role: varchar("role", { length: 10 }).$type<"user" | "assistant">().notNull(),
         content: text("content").notNull(),
-        toolCalls: json("tool_calls").$type<unknown[]>(),
+        toolCalls: json("tool_calls").$type<ToolCallResult[]>(),
         createdAt: timestamp("created_at").defaultNow().notNull(),
     },
     (t) => ({ storeIdx: index("chat_store_idx").on(t.storeId) })
@@ -306,7 +310,7 @@ export const accountRelations = relations(account, ({ one }) => ({
     }),
 }));
 
-export const sellerProfileRelations = relations(sellerProfiles, ({ one, many }) => ({
+export const sellerProfileRelations = relations(sellerProfiles, ({ one }) => ({
     user: one(user, {
         fields: [sellerProfiles.userId],
         references: [user.id],

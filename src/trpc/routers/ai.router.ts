@@ -82,7 +82,20 @@ const TOOLS: OpenAI.Chat.ChatCompletionTool[] = [
 
 // ─── Tool Executor ────────────────────────────────────────────────────────────
 
-async function executeTool(toolName: string, toolInput: Record<string, any>, storeId: string, db: Context["db"]): Promise<string> {
+interface ToolInput {
+    dateRange?: "7D" | "30D" | "90D";
+    search?: string;
+    category?: string;
+    name?: string;
+    price?: number;
+    stock?: number;
+    description?: string;
+    imageUrls?: string[];
+    limit?: number;
+    status?: string;
+}
+
+async function executeTool(toolName: string, toolInput: ToolInput, storeId: string, db: Context["db"]): Promise<string> {
     try {
         switch (toolName) {
             case "get_store_analytics": {
@@ -92,7 +105,7 @@ async function executeTool(toolName: string, toolInput: Record<string, any>, sto
                 const result = await db.execute(
                     `SELECT COALESCE(SUM(CASE WHEN status != 'Refunded' THEN total_amount ELSE 0 END), 0) as revenue, COUNT(*)::int as order_count, COALESCE(AVG(CASE WHEN status != 'Refunded' THEN total_amount END), 0) as aov FROM orders WHERE store_id = '${storeId}' AND created_at >= '${from.toISOString()}'`
                 );
-                const row = (result as any)[0];
+                const row = result[0] as { revenue: string; order_count: number; aov: string };
                 return JSON.stringify({ dateRange: toolInput.dateRange, totalRevenue: parseFloat(row?.revenue ?? "0"), totalOrders: row?.order_count ?? 0, avgOrderValue: parseFloat(row?.aov ?? "0") });
             }
             case "list_products": {
@@ -105,8 +118,8 @@ async function executeTool(toolName: string, toolInput: Record<string, any>, sto
             }
             case "create_product": {
                 const [product] = await db.insert(products).values({
-                    id: uuidv4(), storeId, name: toolInput.name, price: String(toolInput.price),
-                    stock: toolInput.stock ?? 0, category: toolInput.category,
+                    id: uuidv4(), storeId, name: toolInput.name ?? "Untitled Product", price: String(toolInput.price ?? 0),
+                    stock: toolInput.stock ?? 0, category: toolInput.category ?? "Other",
                     description: toolInput.description ?? null, imageUrls: toolInput.imageUrls ?? [],
                     isActive: true, totalSold: 0,
                 }).returning();
@@ -133,8 +146,9 @@ async function executeTool(toolName: string, toolInput: Record<string, any>, sto
             default:
                 return JSON.stringify({ error: `Unknown tool: ${toolName}` });
         }
-    } catch (err: any) {
-        return JSON.stringify({ error: err.message });
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return JSON.stringify({ error: message });
     }
 }
 
@@ -182,7 +196,7 @@ export const aiRouter = createTRPCRouter({
                         if (!("function" in call)) {
                             return { role: "tool" as const, tool_call_id: call.id, content: "Unsupported tool type" };
                         }
-                        const parsedInput = JSON.parse(call.function.arguments) as Record<string, any>;
+                        const parsedInput = JSON.parse(call.function.arguments) as ToolInput;
                         const result = await executeTool(call.function.name, parsedInput, input.storeId, ctx.db);
                         toolResults.push({ toolName: call.function.name, result });
                         return { role: "tool" as const, tool_call_id: call.id, content: result };

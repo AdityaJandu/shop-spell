@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -135,9 +134,9 @@ export default function ChatPage() {
                         : "bg-surface-container-low text-on-surface rounded-bl-md"
                     }`}
                   >
-                    {msg.role === "assistant" && (msg as any).toolCalls && (msg as any).toolCalls.length > 0 && (
+                    {msg.role === "assistant" && msg.toolCalls && msg.toolCalls.length > 0 && (
                       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-                        {((msg as any).toolCalls as { toolName: string }[]).map((t, j) => (
+                        {msg.toolCalls.map((t, j) => (
                           <span key={j} className="inline-flex items-center gap-1 text-[10px] font-label-caps uppercase tracking-widest bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
                             <span className="material-symbols-outlined text-[12px]">build</span>
                             {t.toolName.replace(/_/g, " ")}

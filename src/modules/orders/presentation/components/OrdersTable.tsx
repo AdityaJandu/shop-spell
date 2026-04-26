@@ -8,6 +8,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import { type Order, type OrderItem } from "@/db/schema";
+
+type OrderWithItems = Order & { items: OrderItem[] };
 
 type Props = {
   storeId: string;
@@ -40,7 +43,7 @@ export function OrdersTable({ storeId, status, dateRange }: Props) {
   const { data, isLoading } = useQuery(
     trpc.order.listStoreOrders.queryOptions({
       storeId,
-      status: status as any,
+      status: status as Order["status"] | undefined,
       dateRange,
       cursor,
       limit,
@@ -158,7 +161,7 @@ export function OrdersTable({ storeId, status, dateRange }: Props) {
 
                   {/* Items */}
                   <td className="px-6 py-4 text-muted-foreground">
-                    {(order as any).items?.length ?? 0}
+                    {(order as OrderWithItems).items?.length ?? 0}
                   </td>
 
                   {/* Total */}
@@ -192,7 +195,7 @@ export function OrdersTable({ storeId, status, dateRange }: Props) {
                                 e.stopPropagation();
                                 updateStatusMutation.mutate({
                                   orderId: order.id,
-                                  status: s as any,
+                                  status: s as Order["status"],
                                 });
                               }}
                               className="w-full text-left px-3 py-2 text-sm hover:bg-muted"

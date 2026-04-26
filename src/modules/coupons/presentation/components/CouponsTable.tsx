@@ -112,7 +112,7 @@ export function CouponsTable({ storeId, search = "" }: Props) {
           </div>
           <h3 className="text-lg font-semibold text-on-surface mb-1">No matches found</h3>
           <p className="text-sm font-medium text-on-surface-variant/70 max-w-2xl">
-            We couldn't find any coupons matching "{search}".
+            We couldn&apos;t find any coupons matching &quot;{search}&quot;.
           </p>
         </div>
       </Card>

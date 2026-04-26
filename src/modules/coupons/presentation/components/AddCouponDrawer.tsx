@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,11 @@ export function AddCouponDrawer({ storeId, isOpen, onClose }: Props) {
       maxUses: "",
       expiryDate: "",
     },
+  });
+  
+  const discountType = useWatch({
+    control: form.control,
+    name: "discountType",
   });
 
   const createMutation = useMutation(
@@ -164,7 +169,7 @@ export function AddCouponDrawer({ storeId, isOpen, onClose }: Props) {
                       <FormControl>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-bold">
-                            {form.watch("discountType") === "percentage" ? "%" : "$"}
+                            {discountType === "percentage" ? "%" : "$"}
                           </span>
                           <Input
                             type="number"

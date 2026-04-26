@@ -3,7 +3,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure } from "../init";
-import { orders, stores } from "@/db/schema";
+import { orders, stores, type Order } from "@/db/schema";
 import type { Context } from "../init";
 
 async function assertStoreOwner(db: Context["db"], userId: string, storeId: string) {
@@ -37,7 +37,7 @@ export const orderRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const conditions = [eq(orders.storeId, input.storeId)];
-            if (input.status) conditions.push(eq(orders.status, input.status as any));
+            if (input.status) conditions.push(eq(orders.status, input.status as Order["status"]));
             const range = parseDateRange(input.dateRange);
             if (range) {
                 conditions.push(gte(orders.createdAt, range.from));
@@ -91,7 +91,7 @@ export const orderRouter = createTRPCRouter({
             if (!allowed[order.status]?.includes(input.status)) {
                 throw new TRPCError({ code: "BAD_REQUEST", message: `Cannot transition from "${order.status}" to "${input.status}".` });
             }
-            const [updated] = await ctx.db.update(orders).set({ status: input.status as any, updatedAt: new Date() }).where(eq(orders.id, input.orderId)).returning();
+            const [updated] = await ctx.db.update(orders).set({ status: input.status as Order["status"], updatedAt: new Date() }).where(eq(orders.id, input.orderId)).returning();
             return updated;
         }),
 

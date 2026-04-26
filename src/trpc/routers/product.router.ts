@@ -1,7 +1,7 @@
 // src/trpc/routers/product.router.ts
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, and, ilike, or, desc, sql } from "drizzle-orm";
+import { eq, and, ilike, or, desc } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../init";
 import { products, stores } from "@/db/schema";

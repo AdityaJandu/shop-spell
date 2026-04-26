@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -79,22 +79,34 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
     },
   });
 
+  const resetAll = useCallback(() => {
+    setAiPrompt("");
+    form.reset({
+      name: "",
+      price: "",
+      stock: "",
+      category: "",
+      description: "",
+    });
+  }, [form]);
+
   // Populate form with default values if a product is provided
   useEffect(() => {
-    if (isOpen) {
-      if (product) {
-        form.reset({
-          name: product.name || "",
-          price: product.price?.toString() || "",
-          stock: product.stock?.toString() || "",
-          category: product.category || "",
-          description: (product as any).description || "",
-        });
-      } else {
-        resetAll();
-      }
+    if (isOpen && product) {
+      form.reset({
+        name: product.name || "",
+        price: product.price?.toString() || "",
+        stock: product.stock?.toString() || "",
+        category: product.category || "",
+        description: product.description || "",
+      });
     }
   }, [isOpen, product, form]);
+
+  const handleClose = useCallback(() => {
+    resetAll();
+    onClose();
+  }, [resetAll, onClose]);
 
   // 1. Mutation for Manual Product Creation
   const createMutation = useMutation(
@@ -102,8 +114,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.product.listStoreProducts.queryKey() });
         toast.success("Product created successfully!");
-        resetAll();
-        onClose();
+        handleClose();
       },
       onError: (err) => {
         toast.error(err.message);
@@ -117,8 +128,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.product.listStoreProducts.queryKey() });
         toast.success("Product updated successfully!");
-        resetAll();
-        onClose();
+        handleClose();
       },
       onError: (err) => {
         toast.error(err.message);
@@ -139,8 +149,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
           toast.success("AI responded, check your product list.");
         }
 
-        resetAll();
-        onClose();
+        handleClose();
       },
       onError: (err) => {
         toast.error(err.message || "Failed to generate product via AI.");
@@ -148,16 +157,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
     })
   );
 
-  function resetAll() {
-    setAiPrompt("");
-    form.reset({
-      name: "",
-      price: "",
-      stock: "",
-      category: "",
-      description: "",
-    });
-  }
+
 
   function handleAiSubmit() {
     if (!aiPrompt.trim()) return;
@@ -203,7 +203,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
           "fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300",
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Drawer */}
@@ -231,7 +231,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={onClose}
+            onClick={handleClose}
             className="rounded-full hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5" />
@@ -430,10 +430,7 @@ export function AddProductDrawer({ storeId, isOpen, onClose, product }: Props) {
         <div className="p-8 border-t border-border/50 bg-muted/20 flex items-center justify-end gap-4">
           <Button
             variant="ghost"
-            onClick={() => {
-              resetAll();
-              onClose();
-            }}
+            onClick={handleClose}
             className="px-6 h-12 rounded-xl font-bold text-muted-foreground hover:text-foreground transition-colors"
           >
             Cancel
