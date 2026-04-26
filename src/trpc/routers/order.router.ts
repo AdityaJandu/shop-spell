@@ -28,7 +28,7 @@ function parseDateRange(dateRange?: string): { from: Date; to: Date } | null {
 export const orderRouter = createTRPCRouter({
     listStoreOrders: protectedProcedure
         .input(z.object({
-            storeId: z.string().uuid(),
+            storeId: z.string(),
             status: z.enum(["New", "Processing", "Shipped", "Delivered", "Refunded"]).optional(),
             dateRange: z.string().optional(),
             cursor: z.number().int().min(0).optional().default(0),
@@ -58,7 +58,7 @@ export const orderRouter = createTRPCRouter({
         }),
 
     getOrder: protectedProcedure
-        .input(z.object({ orderId: z.string().uuid() }))
+        .input(z.object({ orderId: z.string() }))
         .query(async ({ ctx, input }) => {
             const order = await ctx.db.query.orders.findFirst({
                 where: eq(orders.id, input.orderId),
@@ -71,7 +71,7 @@ export const orderRouter = createTRPCRouter({
 
     updateOrderStatus: protectedProcedure
         .input(z.object({
-            orderId: z.string().uuid(),
+            orderId: z.string(),
             status: z.enum(["New", "Processing", "Shipped", "Delivered", "Refunded"]),
         }))
         .mutation(async ({ ctx, input }) => {
@@ -97,7 +97,7 @@ export const orderRouter = createTRPCRouter({
 
     getRecentOrders: protectedProcedure
         .input(z.object({
-            storeId: z.string().uuid(),
+            storeId: z.string(),
             limit: z.number().int().min(1).max(20).optional().default(5),
         }))
         .query(async ({ ctx, input }) => {

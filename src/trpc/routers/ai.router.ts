@@ -156,7 +156,7 @@ async function executeTool(toolName: string, toolInput: ToolInput, storeId: stri
 
 export const aiRouter = createTRPCRouter({
     sendMessage: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), message: z.string().min(1).max(4000) }))
+        .input(z.object({ storeId: z.string(), message: z.string().min(1).max(4000) }))
         .mutation(async ({ ctx, input }) => {
             const store = await ctx.db.query.stores.findFirst({
                 where: and(eq(stores.id, input.storeId), eq(stores.ownerId, ctx.user.id)),
@@ -220,7 +220,7 @@ export const aiRouter = createTRPCRouter({
         }),
 
     getChatHistory: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), limit: z.number().int().min(1).max(100).optional().default(50) }))
+        .input(z.object({ storeId: z.string(), limit: z.number().int().min(1).max(100).optional().default(50) }))
         .query(async ({ ctx, input }) => {
             const store = await ctx.db.query.stores.findFirst({
                 where: and(eq(stores.id, input.storeId), eq(stores.ownerId, ctx.user.id)),
@@ -236,7 +236,7 @@ export const aiRouter = createTRPCRouter({
         }),
 
     clearChatHistory: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid() }))
+        .input(z.object({ storeId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const store = await ctx.db.query.stores.findFirst({
                 where: and(eq(stores.id, input.storeId), eq(stores.ownerId, ctx.user.id)),

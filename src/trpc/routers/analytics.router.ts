@@ -34,7 +34,7 @@ function pctChange(current: number, previous: number): number {
 
 export const analyticsRouter = createTRPCRouter({
     getStoreMetrics: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), dateRange: z.enum(["7D", "30D", "90D"]) }))
+        .input(z.object({ storeId: z.string(), dateRange: z.enum(["7D", "30D", "90D"]) }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const { current, previous } = getDateRange(input.dateRange);
@@ -70,7 +70,7 @@ export const analyticsRouter = createTRPCRouter({
         }),
 
     getRevenueChartData: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), dateRange: z.enum(["7D", "30D", "90D"]) }))
+        .input(z.object({ storeId: z.string(), dateRange: z.enum(["7D", "30D", "90D"]) }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const { current } = getDateRange(input.dateRange);
@@ -99,7 +99,7 @@ export const analyticsRouter = createTRPCRouter({
         }),
 
     getTopPerformer: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), dateRange: z.enum(["7D", "30D", "90D"]) }))
+        .input(z.object({ storeId: z.string(), dateRange: z.enum(["7D", "30D", "90D"]) }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const { current } = getDateRange(input.dateRange);
@@ -139,7 +139,7 @@ export const analyticsRouter = createTRPCRouter({
         }),
 
     getOrderStatusBreakdown: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid(), dateRange: z.enum(["7D", "30D", "90D"]) }))
+        .input(z.object({ storeId: z.string(), dateRange: z.enum(["7D", "30D", "90D"]) }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const { current } = getDateRange(input.dateRange);

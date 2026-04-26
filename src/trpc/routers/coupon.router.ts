@@ -18,7 +18,7 @@ async function assertStoreOwner(db: Context["db"], userId: string, storeId: stri
 export const couponRouter = createTRPCRouter({
     createCoupon: protectedProcedure
         .input(z.object({
-            storeId: z.string().uuid(),
+            storeId: z.string(),
             code: z.string().min(3).max(50).toUpperCase().regex(/^[A-Z0-9_-]+$/, "Code may only contain letters, numbers, underscores and dashes."),
             discountAmount: z.number().positive(),
             discountType: z.enum(["percentage", "fixed"]),
@@ -51,7 +51,7 @@ export const couponRouter = createTRPCRouter({
         }),
 
     listCoupons: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid() }))
+        .input(z.object({ storeId: z.string() }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
             const rows = await ctx.db.query.coupons.findMany({
@@ -69,7 +69,7 @@ export const couponRouter = createTRPCRouter({
 
     validateCoupon: protectedProcedure
         .input(z.object({
-            storeId: z.string().uuid(),
+            storeId: z.string(),
             code: z.string().toUpperCase(),
             orderTotal: z.number().positive(),
         }))
@@ -94,7 +94,7 @@ export const couponRouter = createTRPCRouter({
         }),
 
     deleteCoupon: protectedProcedure
-        .input(z.object({ couponId: z.string().uuid() }))
+        .input(z.object({ couponId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const coupon = await ctx.db.query.coupons.findFirst({
                 where: eq(coupons.id, input.couponId),

@@ -91,7 +91,7 @@ export const storeRouter = createTRPCRouter({
      * Fetch a single store — verifies ownership for dashboard access.
      */
     getStore: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid() }))
+        .input(z.object({ storeId: z.string() }))
         .query(async ({ ctx, input }) => {
             const store = await ctx.db.query.stores.findFirst({
                 where: eq(stores.id, input.storeId),
@@ -168,7 +168,7 @@ export const storeRouter = createTRPCRouter({
     updateStore: protectedProcedure
         .input(
             z.object({
-                storeId: z.string().uuid(),
+                storeId: z.string(),
                 name: z.string().min(2).max(255).optional(),
                 description: z.string().max(500).optional(),
                 logoUrl: z.string().url().optional(),
@@ -201,7 +201,7 @@ export const storeRouter = createTRPCRouter({
      * DELETE /trpc/store.deleteStore
      */
     deleteStore: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid() }))
+        .input(z.object({ storeId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const store = await ctx.db.query.stores.findFirst({
                 where: and(eq(stores.id, input.storeId), eq(stores.ownerId, ctx.user.id)),

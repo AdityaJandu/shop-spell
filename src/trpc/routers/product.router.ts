@@ -50,7 +50,7 @@ export const productRouter = createTRPCRouter({
     createProduct: protectedProcedure
         .input(
             z.object({
-                storeId: z.string().uuid(),
+                storeId: z.string(),
                 name: z.string().min(2).max(255),
                 price: z.number().positive(),
                 stock: z.number().int().min(0),
@@ -96,7 +96,7 @@ export const productRouter = createTRPCRouter({
     listStoreProducts: protectedProcedure
         .input(
             z.object({
-                storeId: z.string().uuid(),
+                storeId: z.string(),
                 search: z.string().optional(),
                 category: z.string().optional(),
                 onlyActive: z.boolean().optional().default(true),
@@ -175,7 +175,7 @@ export const productRouter = createTRPCRouter({
      * GET /trpc/product.getProduct
      */
     getProduct: protectedProcedure
-        .input(z.object({ productId: z.string().uuid() }))
+        .input(z.object({ productId: z.string() }))
         .query(async ({ ctx, input }) => {
             const product = await ctx.db.query.products.findFirst({
                 where: eq(products.id, input.productId),
@@ -195,7 +195,7 @@ export const productRouter = createTRPCRouter({
     updateProduct: protectedProcedure
         .input(
             z.object({
-                productId: z.string().uuid(),
+                productId: z.string(),
                 name: z.string().min(2).max(255).optional(),
                 description: z.string().optional(),
                 price: z.number().positive().optional(),
@@ -228,7 +228,7 @@ export const productRouter = createTRPCRouter({
      * DELETE /trpc/product.deleteProduct
      */
     deleteProduct: protectedProcedure
-        .input(z.object({ productId: z.string().uuid() }))
+        .input(z.object({ productId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const existing = await ctx.db.query.products.findFirst({
                 where: eq(products.id, input.productId),
@@ -246,7 +246,7 @@ export const productRouter = createTRPCRouter({
      * Returns distinct categories for the store (for filter UI).
      */
     listCategories: protectedProcedure
-        .input(z.object({ storeId: z.string().uuid() }))
+        .input(z.object({ storeId: z.string() }))
         .query(async ({ ctx, input }) => {
             await assertStoreOwner(ctx.db, ctx.user.id, input.storeId);
 
