@@ -3,13 +3,33 @@
 import React, { useState } from "react";
 import { PromptInput } from "../components/PromptInput";
 import { SuggestionChips } from "../components/SuggestionChips";
+import { useTRPC } from "@/trpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function OnboardingPage() {
   const [prompt, setPrompt] = useState("");
+  const router = useRouter();
+  const trpc = useTRPC();
+
+  const createStoreMutation = useMutation(
+    trpc.store.createStore.mutationOptions({
+      onSuccess: (store) => {
+        toast.success(`"${store.name}" created! Redirecting to dashboard...`);
+        setTimeout(() => {
+          router.push("/analytics");
+        }, 1000);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to create store. Please try again.");
+      },
+    })
+  );
 
   const handleSubmit = (value: string) => {
-    console.log("Submit prompt:", value);
-    // Proceed to generation or next step
+    if (!value.trim() || createStoreMutation.isPending) return;
+    createStoreMutation.mutate({ prompt: value });
   };
 
   return (
@@ -25,23 +45,42 @@ export function OnboardingPage() {
               auto_fix_high
             </span>
           </div>
-          <h1 className="font-h1 text-h1 text-on-surface">What do you sell?</h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">
+          <h1 className="font-h1 text-3xl text-on-surface">What do you sell?</h1>
+          <p className="font-body-lg text-md text-on-surface-variant max-w-2xl mx-auto">
             Describe your business, products, or services. Our AI architect will
             use this to build the foundation of your store.
           </p>
         </div>
 
-        {/* Input Area */}
-        <PromptInput value={prompt} onChange={setPrompt} onSubmit={handleSubmit} />
+        {/* Loading State */}
+        {createStoreMutation.isPending && (
+          <div className="flex flex-col items-center gap-4 py-8">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full bg-primary-container/20 flex items-center justify-center animate-pulse">
+                <span className="material-symbols-outlined text-3xl text-primary-container animate-spin">
+                  progress_activity
+                </span>
+              </div>
+              <div className="absolute inset-0 w-16 h-16 rounded-full bg-gradient-to-r from-primary-container/30 to-secondary/30 blur-xl animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-on-surface">Building your store...</p>
+              <p className="text-sm text-on-surface-variant">Our AI is crafting the perfect foundation</p>
+            </div>
+          </div>
+        )}
 
-        {/* Suggestion Chips */}
-        <SuggestionChips
-          onSelect={(suggestion) => {
-            setPrompt(suggestion);
-            // Optionally auto-submit: handleSubmit(suggestion);
-          }}
-        />
+        {/* Input Area */}
+        {!createStoreMutation.isPending && (
+          <>
+            <PromptInput value={prompt} onChange={setPrompt} onSubmit={handleSubmit} />
+            <SuggestionChips
+              onSelect={(suggestion) => {
+                setPrompt(suggestion);
+              }}
+            />
+          </>
+        )}
       </main>
     </div>
   );

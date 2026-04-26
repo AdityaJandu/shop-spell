@@ -59,27 +59,27 @@ export function ExplorePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
-      
+
       <main className="flex-grow w-full max-w-7xl mx-auto px-6 md:px-10 py-12 md:py-20 flex flex-col gap-12">
-        
+
         {/* Explore Hero Header */}
         <section className="bg-surface-container-low rounded-[2rem] p-8 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 shadow-sm border border-border/50 relative overflow-hidden">
           {/* Decorative glow */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary-container/20 rounded-full blur-[100px] pointer-events-none translate-x-1/3 -translate-y-1/3"></div>
-          
+
           <div className="flex flex-col gap-6 max-w-2xl relative z-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary font-label-caps tracking-widest text-xs w-fit">
               <span className="material-symbols-outlined text-[16px]">travel_explore</span>
               <span>ShopSpell Marketplace</span>
             </div>
-            <h1 className="font-h1 text-4xl md:text-5xl lg:text-6xl text-on-surface leading-tight">
+            <h1 className="font-h1 text-3xl md:text-4xl lg:text-5xl text-on-surface leading-tight">
               Discover amazing products from independent stores.
             </h1>
-            <p className="font-body-lg text-lg text-on-surface-variant max-w-xl leading-relaxed">
+            <p className="font-body-lg text-lg text-on-surface-variant leading-relaxed">
               Browse through a curated collection of products created by sellers worldwide. Inspired? Start your own journey today.
             </p>
           </div>
-          
+
           <div className="flex flex-col items-center justify-center p-8 bg-surface-container-lowest rounded-3xl shadow-xl shadow-black/5 border border-border relative z-10 min-w-[300px]">
             <span className="material-symbols-outlined text-5xl text-primary-container mb-4">
               storefront
@@ -104,11 +104,10 @@ export function ExplorePage() {
               {["All", "Home Decor", "Accessories", "Lighting", "Footwear"].map((cat, i) => (
                 <button
                   key={cat}
-                  className={`px-4 py-2 rounded-full font-label-caps text-xs tracking-widest uppercase whitespace-nowrap transition-colors ${
-                    i === 0 
-                      ? "bg-primary-container text-white" 
-                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
-                  }`}
+                  className={`px-4 py-2 rounded-full font-label-caps text-xs tracking-widest uppercase whitespace-nowrap transition-colors ${i === 0
+                    ? "bg-primary-container text-white"
+                    : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container"
+                    }`}
                 >
                   {cat}
                 </button>

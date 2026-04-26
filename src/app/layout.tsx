@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono, Geist, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { TRPCReactProvider } from "@/trpc/client";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 
-const spaceGroteskHeading = Space_Grotesk({subsets:['latin'],variable:'--font-heading'});
+const spaceGroteskHeading = Space_Grotesk({ subsets: ['latin'], variable: '--font-heading' });
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -40,7 +43,12 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans bg-background text-foreground">
-        {children}
+        <TRPCReactProvider>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </TRPCReactProvider>
+        <Toaster richColors position="bottom-right" />
       </body>
     </html>
   );
