@@ -1,39 +1,151 @@
-import { SigninForm } from "../components/SigninForm";
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Sparkles, ArrowRight, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+
+const signinSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z.string().min(1, { message: "Password is required." }),
+});
+
+type SigninValues = z.infer<typeof signinSchema>;
 
 export function SigninPage() {
+
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<SigninValues>({
+    resolver: zodResolver(signinSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  async function onSubmit(values: SigninValues) {
+    setError(null);
+    setLoading(true);
+
+    try {
+      await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+        callbackURL: "/",
+      }, {
+        onSuccess() {
+          router.push("/");
+        }
+        ,
+        onError({ error }) {
+          setError(error.message);
+        }
+      }
+      );
+    } catch (error) {
+      console.log(error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="bg-background min-h-screen flex items-center justify-center p-gutter antialiased text-on-surface selection:bg-primary-container selection:text-on-primary">
-      <main className="w-full max-w-[420px]">
-        <div className="bg-surface-container-lowest rounded-[16px] shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-lg md:p-xl flex flex-col">
-          <header className="flex flex-col items-center text-center mb-xl">
-            <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mb-md text-primary-container">
-              <span className="material-symbols-outlined text-[32px] icon-fill">
-                login
-              </span>
-            </div>
-            <h1 className="font-h2 text-h2 text-on-surface mb-xs">
-              Welcome back
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">
-              Enter your details to access your store.
-            </p>
-          </header>
-
-          <SigninForm />
+    <div className="min-h-screen bg-muted/30 flex flex-col items-center justify-center p-6 antialiased">
+      <Link href="/" className="flex items-center gap-2 text-foreground mb-10 hover:opacity-80 transition-opacity">
+        <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-lg shadow-primary-container/20">
+          <Sparkles className="w-6 h-6 fill-on-primary-container" />
         </div>
+        <span className="text-2xl tracking-tight font-black">ShopSpell</span>
+      </Link>
 
-        <div className="mt-lg text-center">
-          <p className="font-body-md text-body-md text-on-surface-variant">
+      <Card className="w-full max-w-[440px] shadow-2xl border-border/40 bg-card rounded-[24px] overflow-hidden">
+        <CardHeader className="space-y-2 text-center pt-10 pb-8">
+          <CardTitle className="text-3xl font-black tracking-tight">Welcome back</CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            Enter your details to access your store.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">Email Address</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="name@example.com" className="h-12 rounded-xl bg-background border-border/60 focus:ring-primary/20" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-[11px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-xs font-black uppercase tracking-widest opacity-60 ml-1">Password</FormLabel>
+                        <Link href="/forgot-password" className="text-[11px] font-bold text-primary hover:underline underline-offset-4">
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <Input type="password" placeholder="••••••••" className="h-12 rounded-xl bg-background border-border/60 focus:ring-primary/20" {...field} />
+                      </FormControl>
+                      <FormMessage className="text-[11px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <Button disabled={loading} type="submit" className="w-full h-12 rounded-xl hover:bg-primary-container/90 bg-primary-container text-on-primary-container font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Get Started <ArrowRight className="w-4 h-4" /></>}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border/50" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase tracking-[0.2em] font-bold">
+                    <span className="bg-card px-4 text-muted-foreground">Or continue with</span>
+                  </div>
+                </div>
+
+                <Button variant="outline" type="button" className="w-full h-12 rounded-xl border-border/60 hover:bg-muted/50 font-bold flex items-center justify-center gap-3 transition-all">
+                  <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
+                  Google
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="pb-10 pt-2 justify-center">
+          <p className="text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <a
-              className="text-secondary font-semibold hover:text-on-secondary-container hover:underline transition-colors"
-              href="/sign-up"
-            >
+            <Link href="/sign-up" className="text-primary font-bold hover:underline underline-offset-4">
               Sign up
-            </a>
+            </Link>
           </p>
-        </div>
-      </main>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
