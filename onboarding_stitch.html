@@ -1,142 +1,163 @@
 <!DOCTYPE html>
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>ShopSpell - Onboarding</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        "colors": {
-                "on-tertiary-fixed": "#1a1a2e",
-                "tertiary-fixed": "#e2e0fc",
-                "primary-fixed-dim": "#ffb4a8",
-                "inverse-on-surface": "#f1efff",
-                "on-surface-variant": "#59413d",
-                "surface-container-highest": "#e2e1f3",
-                "surface-container-high": "#e8e6f9",
-                "primary": "#af2f22",
-                "on-tertiary-container": "#28283d",
-                "error-container": "#ffdad6",
-                "surface": "#fbf8ff",
-                "secondary-fixed-dim": "#5dd9d0",
-                "surface-dim": "#dad8eb",
-                "on-primary": "#ffffff",
-                "on-background": "#1a1b28",
-                "tertiary-container": "#908fa8",
-                "inverse-surface": "#2f2f3d",
-                "primary-container": "#f4614e",
-                "on-tertiary": "#ffffff",
-                "secondary": "#006a65",
-                "surface-variant": "#e2e1f3",
-                "secondary-fixed": "#7cf6ec",
-                "tertiary-fixed-dim": "#c6c4df",
-                "surface-container": "#eeecff",
-                "inverse-primary": "#ffb4a8",
-                "on-primary-container": "#5d0000",
-                "surface-container-low": "#f4f2ff",
-                "on-tertiary-fixed-variant": "#45455b",
-                "outline": "#8d706c",
-                "secondary-container": "#79f3ea",
-                "surface-tint": "#af2f22",
-                "on-secondary-fixed": "#00201e",
-                "on-secondary-container": "#006f69",
-                "error": "#ba1a1a",
-                "on-primary-fixed-variant": "#8d160d",
-                "on-secondary-fixed-variant": "#00504c",
-                "on-error": "#ffffff",
-                "on-primary-fixed": "#410000",
-                "on-secondary": "#ffffff",
-                "tertiary": "#5d5c74",
-                "on-error-container": "#93000a",
-                "outline-variant": "#e1bfb9",
-                "background": "#fbf8ff",
-                "surface-bright": "#fbf8ff",
-                "on-surface": "#1a1b28",
-                "primary-fixed": "#ffdad4",
-                "surface-container-lowest": "#ffffff"
-        },
-        "borderRadius": {
-                "DEFAULT": "0.25rem",
-                "lg": "0.5rem",
-                "xl": "0.75rem",
-                "full": "9999px"
-        },
-        "spacing": {
-                "md": "16px",
-                "gutter": "24px",
-                "unit": "4px",
-                "sm": "8px",
-                "xl": "40px",
-                "container-max": "1280px",
-                "xs": "4px",
-                "lg": "24px"
-        },
-        "fontFamily": {
-                "h1": ["Plus Jakarta Sans"],
-                "body-lg": ["Plus Jakarta Sans"],
-                "label-caps": ["Plus Jakarta Sans"],
-                "h3": ["Plus Jakarta Sans"],
-                "code": ["JetBrains Mono"],
-                "body-md": ["Plus Jakarta Sans"],
-                "h2": ["Plus Jakarta Sans"]
-        },
-        "fontSize": {
-                "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-                "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
-                "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600" }],
-                "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
-                "code": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
-                "body-md": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
-                "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>ShopSpell - Onboarding</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed": "#1a1a2e",
+            "tertiary-fixed": "#e2e0fc",
+            "primary-fixed-dim": "#ffb4a8",
+            "inverse-on-surface": "#f1efff",
+            "on-surface-variant": "#59413d",
+            "surface-container-highest": "#e2e1f3",
+            "surface-container-high": "#e8e6f9",
+            "primary": "#af2f22",
+            "on-tertiary-container": "#28283d",
+            "error-container": "#ffdad6",
+            "surface": "#fbf8ff",
+            "secondary-fixed-dim": "#5dd9d0",
+            "surface-dim": "#dad8eb",
+            "on-primary": "#ffffff",
+            "on-background": "#1a1b28",
+            "tertiary-container": "#908fa8",
+            "inverse-surface": "#2f2f3d",
+            "primary-container": "#f4614e",
+            "on-tertiary": "#ffffff",
+            "secondary": "#006a65",
+            "surface-variant": "#e2e1f3",
+            "secondary-fixed": "#7cf6ec",
+            "tertiary-fixed-dim": "#c6c4df",
+            "surface-container": "#eeecff",
+            "inverse-primary": "#ffb4a8",
+            "on-primary-container": "#5d0000",
+            "surface-container-low": "#f4f2ff",
+            "on-tertiary-fixed-variant": "#45455b",
+            "outline": "#8d706c",
+            "secondary-container": "#79f3ea",
+            "surface-tint": "#af2f22",
+            "on-secondary-fixed": "#00201e",
+            "on-secondary-container": "#006f69",
+            "error": "#ba1a1a",
+            "on-primary-fixed-variant": "#8d160d",
+            "on-secondary-fixed-variant": "#00504c",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#410000",
+            "on-secondary": "#ffffff",
+            "tertiary": "#5d5c74",
+            "on-error-container": "#93000a",
+            "outline-variant": "#e1bfb9",
+            "background": "#fbf8ff",
+            "surface-bright": "#fbf8ff",
+            "on-surface": "#1a1b28",
+            "primary-fixed": "#ffdad4",
+            "surface-container-lowest": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "md": "16px",
+            "gutter": "24px",
+            "unit": "4px",
+            "sm": "8px",
+            "xl": "40px",
+            "container-max": "1280px",
+            "xs": "4px",
+            "lg": "24px"
+          },
+          "fontFamily": {
+            "h1": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "h3": ["Plus Jakarta Sans"],
+            "code": ["JetBrains Mono"],
+            "body-md": ["Plus Jakarta Sans"],
+            "h2": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "h1": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+            "label-caps": ["11px", { "lineHeight": "1", "letterSpacing": "0.08em", "fontWeight": "600" }],
+            "h3": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+            "code": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+            "body-md": ["15px", { "lineHeight": "1.5", "fontWeight": "400" }],
+            "h2": ["32px", { "lineHeight": "1.25", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+          }
         }
       }
     }
-  }
-</script>
-<style>
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-</style>
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
 </head>
-<body class="bg-background min-h-screen flex flex-col items-center justify-center font-body-md text-on-surface antialiased p-lg">
-<!-- Main Canvas Content (No Navigation Shell for Transactional Onboarding) -->
-<main class="w-full max-w-3xl mx-auto flex flex-col items-center text-center space-y-xl">
-<!-- Header Section -->
-<div class="space-y-sm flex flex-col items-center">
-<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-md text-primary-container shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">auto_fix_high</span>
-</div>
-<h1 class="font-h1 text-h1 text-on-surface">What do you sell?</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">Describe your business, products, or services. Our AI architect will use this to build the foundation of your store.</p>
-</div>
-<!-- Input Area -->
-<div class="w-full max-w-2xl relative shadow-[0_8px_24px_rgba(0,0,0,0.08)] rounded-full bg-surface-container-lowest flex items-center p-sm focus-within:ring-2 focus-within:ring-primary-container/50 transition-shadow duration-300">
-<input autofocus="" class="w-full bg-transparent border-none focus:ring-0 font-body-lg text-body-lg text-on-surface px-lg py-md placeholder-on-surface-variant/40" placeholder="I sell..." type="text"/>
-<button class="bg-primary-container text-on-primary-container rounded-full h-14 w-14 flex-shrink-0 flex items-center justify-center hover:opacity-90 transition-opacity active:scale-95 ml-xs shadow-sm">
-<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">arrow_upward</span>
-</button>
-</div>
-<!-- Suggestion Chips -->
-<div class="flex flex-wrap justify-center gap-md pt-sm">
-<button class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
+
+<body
+  class="bg-background min-h-screen flex flex-col items-center justify-center font-body-md text-on-surface antialiased p-lg">
+  <!-- Main Canvas Content (No Navigation Shell for Transactional Onboarding) -->
+  <main class="w-full max-w-3xl mx-auto flex flex-col items-center text-center space-y-xl">
+    <!-- Header Section -->
+    <div class="space-y-sm flex flex-col items-center">
+      <div
+        class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-md text-primary-container shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">auto_fix_high</span>
+      </div>
+      <h1 class="font-h1 text-h1 text-on-surface">What do you sell?</h1>
+      <p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg mx-auto">Describe your business, products, or
+        services. Our AI architect will use this to build the foundation of your store.</p>
+    </div>
+    <!-- Input Area -->
+    <div
+      class="w-full max-w-2xl relative shadow-[0_8px_24px_rgba(0,0,0,0.08)] rounded-full bg-surface-container-lowest flex items-center p-sm focus-within:ring-2 focus-within:ring-primary-container/50 transition-shadow duration-300">
+      <input autofocus=""
+        class="w-full bg-transparent border-none focus:ring-0 font-body-lg text-body-lg text-on-surface px-lg py-md placeholder-on-surface-variant/40"
+        placeholder="I sell..." type="text" />
+      <button
+        class="bg-primary-container text-on-primary-container rounded-full h-14 w-14 flex-shrink-0 flex items-center justify-center hover:opacity-90 transition-opacity active:scale-95 ml-xs shadow-sm">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">arrow_upward</span>
+      </button>
+    </div>
+    <!-- Suggestion Chips -->
+    <div class="flex flex-wrap justify-center gap-md pt-sm">
+      <button
+        class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
         I sell jewellery...
       </button>
-<button class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
+      <button
+        class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
         I bake cakes...
       </button>
-<button class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
+      <button
+        class="px-lg py-sm rounded-full border border-outline-variant font-body-md text-body-md text-on-surface hover:bg-surface-container transition-colors duration-200">
         I offer consulting...
       </button>
-</div>
-</main>
-</body></html>
+    </div>
+  </main>
+</body>
+
+</html>

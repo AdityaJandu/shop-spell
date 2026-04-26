@@ -8,10 +8,10 @@ export function BottomNav() {
   const pathname = usePathname();
 
   const links = [
-    { name: "Chat", href: "/dashboard/chat", icon: "chat" },
-    { name: "Orders", href: "/dashboard/orders", icon: "receipt_long" },
-    { name: "Products", href: "/dashboard/products", icon: "inventory_2" },
-    { name: "Analytics", href: "/dashboard/analytics", icon: "query_stats" },
+    { name: "Chat", href: "/chat", icon: "chat" },
+    { name: "Orders", href: "/orders", icon: "receipt_long" },
+    { name: "Products", href: "/products", icon: "inventory_2" },
+    { name: "Analytics", href: "/analytics", icon: "query_stats" },
   ];
 
   return (

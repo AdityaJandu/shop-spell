@@ -8,11 +8,11 @@ export function TopNav() {
   const pathname = usePathname();
 
   const links = [
-    { name: "Chat", href: "/dashboard/chat" },
-    { name: "Orders", href: "/dashboard/orders" },
-    { name: "Products", href: "/dashboard/products" },
-    { name: "Coupons", href: "/dashboard/coupons" },
-    { name: "Analytics", href: "/dashboard/analytics" },
+    { name: "Chat", href: "/chat" },
+    { name: "Orders", href: "/orders" },
+    { name: "Products", href: "/products" },
+    { name: "Coupons", href: "/coupons" },
+    { name: "Analytics", href: "/analytics" },
   ];
 
   return (
