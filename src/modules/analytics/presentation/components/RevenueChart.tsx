@@ -1,108 +1,288 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+"use client";
 
-export function RevenueChart() {
+import React, { useRef, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+
+type Props = { storeId: string; dateRange: "7D" | "30D" | "90D" };
+
+const W = 1000;
+const H = 300;
+const PAD = { top: 20, right: 20, bottom: 20, left: 10 };
+
+function buildPath(points: { revenue: number }[], maxRevenue: number) {
+  if (points.length === 0) return { line: "", area: "" };
+
+  const xStep = (W - PAD.left - PAD.right) / Math.max(points.length - 1, 1);
+
+  const coords = points.map((p, i) => ({
+    x: PAD.left + i * xStep,
+    y:
+      PAD.top +
+      (H - PAD.top - PAD.bottom) *
+      (1 - (p.revenue / maxRevenue) * 0.85),
+  }));
+
+  let line = `M${coords[0].x},${coords[0].y}`;
+  for (let i = 1; i < coords.length; i++) {
+    const cp1x = coords[i - 1].x + xStep * 0.4;
+    const cp1y = coords[i - 1].y;
+    const cp2x = coords[i].x - xStep * 0.4;
+    const cp2y = coords[i].y;
+    line += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${coords[i].x},${coords[i].y}`;
+  }
+
+  const bottom = H - PAD.bottom;
+  const area = `${line} L${coords.at(-1)!.x},${bottom} L${coords[0].x},${bottom} Z`;
+
+  return { line, area, coords };
+}
+
+function formatRevenue(v: number) {
+  if (v >= 1000) return `$${(v / 1000).toFixed(1)}k`;
+  return `$${v.toFixed(0)}`;
+}
+
+export function RevenueChart({ storeId, dateRange }: Props) {
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.analytics.getRevenueChartData.queryOptions({ storeId, dateRange })
+  );
+
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    date: string;
+    revenue: number;
+    orders: number;
+  } | null>(null);
+
+  const chartData = data ?? [];
+  const maxRevenue = Math.max(...chartData.map((d) => d.revenue), 1);
+
+  const { line, area, coords } = buildPath(chartData, maxRevenue) as ReturnType<
+    typeof buildPath
+  > & { coords?: { x: number; y: number }[] };
+
+  const yLabels = [1, 0.75, 0.5, 0.25, 0].map((f) => ({
+    value: formatRevenue(maxRevenue * f),
+    y:
+      PAD.top +
+      (H - PAD.top - PAD.bottom) * (1 - f * 0.85),
+  }));
+
+  const xLabels: { label: string; x: number }[] = [];
+
+  if (chartData.length > 0) {
+    const indices = [
+      0,
+      Math.floor(chartData.length * 0.25),
+      Math.floor(chartData.length * 0.5),
+      Math.floor(chartData.length * 0.75),
+      chartData.length - 1,
+    ].filter((v, i, a) => a.indexOf(v) === i);
+
+    const xStep = (W - PAD.left - PAD.right) / Math.max(chartData.length - 1, 1);
+
+    for (const idx of indices) {
+      xLabels.push({
+        label: new Date(chartData[idx].date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        x: PAD.left + idx * xStep,
+      });
+    }
+  }
+
+  function handleMouseMove(e: React.MouseEvent<SVGSVGElement>) {
+    const svg = svgRef.current;
+    if (!svg || !coords || chartData.length === 0) return;
+
+    const rect = svg.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * W;
+
+    const xStep =
+      (W - PAD.left - PAD.right) /
+      Math.max(chartData.length - 1, 1);
+
+    const idx = Math.min(
+      Math.max(Math.round((mouseX - PAD.left) / xStep), 0),
+      chartData.length - 1
+    );
+
+    const point = coords[idx];
+    const d = chartData[idx];
+
+    setTooltip({
+      x: (point.x / W) * 100,
+      y: (point.y / H) * 100,
+      date: d.date,
+      revenue: d.revenue,
+      orders: d.orderCount,
+    });
+  }
+
   return (
-    <Card className="bg-surface-container-lowest rounded-[16px] border-none shadow-[0_2px_12px_rgba(0,0,0,0.06)] w-full">
-      <CardHeader className="p-lg md:p-xl pb-0">
-        <div className="flex justify-between items-center mb-lg">
-          <CardTitle className="font-h3 text-h3 text-on-surface">
-            Revenue Over Time
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              className="px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-high transition-colors h-auto"
-            >
-              7D
-            </Button>
-            <Button
-              variant="default"
-              className="px-4 py-1.5 rounded-full bg-surface-variant text-on-surface font-label-caps text-label-caps h-auto hover:bg-surface-variant/90"
-            >
-              30D
-            </Button>
-            <Button
-              variant="ghost"
-              className="px-4 py-1.5 rounded-full bg-surface-container text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-container-high transition-colors h-auto"
-            >
-              90D
-            </Button>
-          </div>
-        </div>
+    <Card className="w-full rounded-2xl border-none bg-surface-container-lowest shadow-sm">
+      <CardHeader className="px-6 pt-6 pb-2">
+        <CardTitle className="text-lg font-semibold text-on-surface">
+          Revenue Over Time
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-lg md:p-xl pt-0">
-        {/* Chart Visual Placeholder */}
-        <div className="relative w-full h-[300px] mt-8 border-l border-b border-surface-variant">
-          {/* Horizontal Grid Lines */}
-          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <div className="w-full h-px bg-surface-variant"></div>
-            <div className="w-full h-px bg-surface-variant"></div>
-            <div className="w-full h-px bg-surface-variant"></div>
-            <div className="w-full h-px bg-surface-variant"></div>
-            <div className="w-full h-px bg-transparent"></div>
-          </div>
-          {/* Y-Axis Labels */}
-          <div className="absolute -left-12 inset-y-0 flex flex-col justify-between text-right text-xs text-on-surface-variant font-code py-1">
-            <span>$1k</span>
-            <span>$750</span>
-            <span>$500</span>
-            <span>$250</span>
-            <span>$0</span>
-          </div>
-          {/* Chart Area and Line */}
-          <div className="absolute inset-0 overflow-hidden">
-            <svg
-              className="w-full h-full"
-              fill="none"
-              preserveAspectRatio="none"
-              viewBox="0 0 1000 300"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M0 300 L0 150 C 100 120, 200 180, 300 100 C 400 20, 500 140, 600 80 C 700 20, 800 100, 900 40 L 1000 60 L 1000 300 Z"
-                fill="url(#paint0_linear)"
-              ></path>
-              <path
-                d="M0 150 C 100 120, 200 180, 300 100 C 400 20, 500 140, 600 80 C 700 20, 800 100, 900 40 L 1000 60"
-                stroke="#F4614E"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="3"
-              ></path>
-              <defs>
-                <linearGradient
-                  gradientUnits="userSpaceOnUse"
-                  id="paint0_linear"
-                  x1="500"
-                  x2="500"
-                  y1="0"
-                  y2="300"
-                >
-                  <stop stopColor="#006A65" stopOpacity="0.1"></stop>
-                  <stop offset="1" stopColor="#006A65" stopOpacity="0"></stop>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          {/* Data Point Tooltip (Mock) */}
-          <div className="absolute top-[80px] left-[60%] -translate-x-1/2 flex flex-col items-center">
-            <div className="w-3 h-3 bg-primary-container rounded-full border-2 border-surface-container-lowest shadow-sm z-10"></div>
-            <div className="w-px h-[220px] bg-primary-container/30 border-dashed border-l border-primary-container/50"></div>
-            <div className="absolute -top-12 bg-inverse-surface text-inverse-on-surface px-3 py-1.5 rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.08)] font-code text-xs whitespace-nowrap">
-              $840.00 <span className="opacity-70 ml-1">Aug 14</span>
+
+      <CardContent className="px-6 pb-6">
+        {isLoading ? (
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-[300px] w-full rounded-xl" />
+            <div className="flex justify-between">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-3 w-12 rounded" />
+              ))}
             </div>
           </div>
-          {/* X-Axis Labels */}
-          <div className="absolute -bottom-8 inset-x-0 flex justify-between text-xs text-on-surface-variant font-code px-2">
-            <span>Aug 1</span>
-            <span>Aug 8</span>
-            <span>Aug 15</span>
-            <span>Aug 22</span>
-            <span>Aug 30</span>
+        ) : chartData.length === 0 ? (
+          <div className="flex h-[300px] items-center justify-center">
+            <p className="text-sm text-on-surface-variant">
+              No revenue data for this period.
+            </p>
           </div>
-        </div>
+        ) : (
+          <div className="mt-2 flex gap-4">
+            {/* Y Axis */}
+            <div className="relative w-12 text-right">
+              {yLabels.map(({ value, y }, i) => (
+                <span
+                  key={i}
+                  className="absolute right-0 text-xs text-muted-foreground"
+                  style={{
+                    top: `${(y / H) * 100}%`,
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  {value}
+                </span>
+              ))}
+            </div>
+
+            {/* Chart */}
+            <div className="flex-1 flex flex-col gap-2">
+              <div
+                className="relative h-[300px] w-full overflow-hidden rounded-xl"
+                onMouseLeave={() => setTooltip(null)}
+              >
+                <svg
+                  ref={svgRef}
+                  className="h-full w-full"
+                  viewBox={`0 0 ${W} ${H}`}
+                  preserveAspectRatio="none"
+                  onMouseMove={handleMouseMove}
+                >
+                  {/* Grid */}
+                  {yLabels.map(({ y }, i) => (
+                    <line
+                      key={i}
+                      x1={PAD.left}
+                      x2={W - PAD.right}
+                      y1={y}
+                      y2={y}
+                      stroke="currentColor"
+                      strokeOpacity="0.06"
+                    />
+                  ))}
+
+                  <defs>
+                    <linearGradient
+                      id="revenue_gradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#006A65"
+                        stopOpacity="0.25"
+                      />
+                      <stop offset="100%" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  <path d={area} fill="url(#revenue_gradient)" />
+                  <path
+                    d={line}
+                    fill="none"
+                    stroke="#006A65"
+                    strokeWidth="2.5"
+                  />
+
+                  {/* Hover */}
+                  {tooltip && coords && (() => {
+                    const idx = chartData.findIndex(
+                      (d) => d.date === tooltip.date
+                    );
+                    const pt = coords[idx];
+
+                    return pt ? (
+                      <>
+                        <line
+                          x1={pt.x}
+                          x2={pt.x}
+                          y1={PAD.top}
+                          y2={H - PAD.bottom}
+                          stroke="#006A65"
+                          strokeOpacity="0.2"
+                          strokeDasharray="4 4"
+                        />
+                        <circle cx={pt.x} cy={pt.y} r="4" fill="#006A65" />
+                      </>
+                    ) : null;
+                  })()}
+                </svg>
+
+                {tooltip && (
+                  <div
+                    className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border bg-background px-3 py-2 text-xs shadow-md"
+                    style={{
+                      left: `${tooltip.x}%`,
+                      top: `calc(${tooltip.y}% - 10px)`,
+                    }}
+                  >
+                    <p className="font-medium">
+                      {formatRevenue(tooltip.revenue)}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {new Date(tooltip.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}{" "}
+                      · {tooltip.orders} orders
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* X Axis */}
+              <div className="relative h-4">
+                {xLabels.map(({ label, x }, i) => (
+                  <span
+                    key={i}
+                    className="absolute text-xs text-muted-foreground"
+                    style={{
+                      left: `${(x / W) * 100}%`,
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

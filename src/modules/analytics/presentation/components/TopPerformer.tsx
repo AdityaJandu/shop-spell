@@ -1,9 +1,52 @@
+"use client";
+
 import React from "react";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
-export function TopPerformer() {
+type Props = { storeId: string; dateRange: "7D" | "30D" | "90D" };
+
+export function TopPerformer({ storeId, dateRange }: Props) {
+  const trpc = useTRPC();
+  const { data, isLoading } = useQuery(
+    trpc.analytics.getTopPerformer.queryOptions({ storeId, dateRange })
+  );
+
+  if (isLoading) {
+    return (
+      <Card className="bg-surface-container-lowest rounded-[16px] border-none shadow-[0_2px_12px_rgba(0,0,0,0.06)] lg:col-span-1 flex flex-col h-full">
+        <CardContent className="p-lg flex flex-col flex-1">
+          <div className="flex justify-between items-start mb-md">
+            <Skeleton className="h-5 w-28 rounded" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <div className="flex-grow flex items-center justify-center py-xl">
+            <Skeleton className="w-32 h-32 rounded-full" />
+          </div>
+          <div className="text-center space-y-2">
+            <Skeleton className="h-5 w-40 mx-auto rounded" />
+            <Skeleton className="h-3 w-32 mx-auto rounded" />
+            <Skeleton className="h-4 w-24 mx-auto rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Card className="bg-surface-container-lowest rounded-[16px] border-none shadow-[0_2px_12px_rgba(0,0,0,0.06)] lg:col-span-1 flex flex-col h-full">
+        <CardContent className="p-lg flex flex-col flex-1 items-center justify-center">
+          <span className="material-symbols-outlined text-5xl text-on-surface-variant/30 mb-3">emoji_events</span>
+          <p className="text-sm text-on-surface-variant">No sales data yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-surface-container-lowest rounded-[16px] border-none shadow-[0_2px_12px_rgba(0,0,0,0.06)] lg:col-span-1 flex flex-col h-full">
       <CardContent className="p-lg flex flex-col flex-1">
@@ -15,34 +58,52 @@ export function TopPerformer() {
             variant="destructive"
             className="rounded-full text-xs font-label-caps tracking-widest bg-error-container text-on-error-container uppercase hover:bg-error-container/90"
           >
-            Most Critical
+            #{data.totalQuantitySold} Sold
           </Badge>
         </div>
         <div className="flex-grow flex flex-col justify-center items-center py-xl bg-surface-container-low rounded-xl mb-md overflow-hidden relative">
           <div className="w-32 h-32 rounded-full bg-surface-container-highest shadow-inner flex items-center justify-center relative z-10 overflow-hidden">
-            <Image
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFf_uYo3BIXtz1SSKQ2zOoXNqjHEFK9zcywRzVcr0q2QuhaDcwx6vZP5pzcxfEMWm1wQMwV5vIAiDFZ2tVVISlQE79JD2KW85tWAYh6CzLaIlJpN0d__65qTBJH-LPJ0MmbJ7TjcaSJLHcBg6eb4vFRlorMZvH0XeqNNzbbxV4fWqcxF9Xyj1fZ9u2Z3xQtZrcJdIzKm6HiWGbiJq7b4TOCLJA5tlafDiJ8hru9Iww2Ko4adQ-yLqGYkYbs_Ta4Yrl9EN9gwVmszs"
-              alt="Crimson Velocity Runner"
-              width={128}
-              height={128}
-              className="w-full h-full object-cover"
-              unoptimized
-            />
+            {data.imageUrl ? (
+              <img
+                src={data.imageUrl}
+                alt={data.productName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="material-symbols-outlined text-4xl text-on-surface-variant/40">
+                inventory_2
+              </span>
+            )}
           </div>
-          {/* Subtle AI magic glow */}
-          <div className="absolute w-40 h-40 bg-secondary/10 rounded-full blur-2xl z-0 mix-blend-multiply"></div>
+          <div className="absolute w-40 h-40 bg-secondary/10 rounded-full blur-2xl z-0 mix-blend-multiply" />
         </div>
         <div className="text-center">
           <h4 className="font-h3 text-lg text-on-surface">
-            Crimson Velocity Runner
+            {data.productName}
           </h4>
-          <p className="font-body-md text-on-surface-variant text-sm mt-1">
-            124 units sold this month
-          </p>
+          {data.category && (
+            <span className="inline-block mt-1 text-xs font-label-caps text-primary-container bg-surface-container px-2 py-0.5 rounded-full uppercase tracking-widest">
+              {data.category}
+            </span>
+          )}
           <p className="font-code text-primary-container text-sm font-semibold mt-2">
-            $14,880 Revenue
+            ${data.totalRevenue.toFixed(2)} Revenue
           </p>
         </div>
+        {/* Runner-ups */}
+        {data.runnerUps && data.runnerUps.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-surface-variant space-y-2">
+            {data.runnerUps.map((r, i) => (
+              <div key={r.productId} className="flex justify-between items-center text-sm">
+                <span className="text-on-surface-variant">
+                  <span className="text-xs text-on-surface-variant/60 mr-1">#{i + 2}</span>
+                  {r.productName}
+                </span>
+                <span className="font-code text-on-surface text-xs">{r.totalQuantitySold} sold</span>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
