@@ -1,11 +1,9 @@
-import React from "react";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Sparkles, Lock, CheckCircle2, Send, Search, ShoppingBag } from "lucide-react";
 
 export function BrowserMockup() {

@@ -4,11 +4,10 @@ import { Hero } from "../components/Hero";
 import { BrowserMockup } from "../components/BrowserMockup";
 import { HowItWorks } from "../components/HowItWorks";
 import { Footer } from "../components/Footer";
+export async function LandingPage() {
 
-export function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Navigation Header */}
       <Header />
 
       {/* Main Content */}

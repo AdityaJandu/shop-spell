@@ -52,7 +52,7 @@ export function SignupPage() {
       },
         {
           onSuccess: () => {
-            router.push("/");
+            router.push("/onboarding");
           },
           onError: ({ error }) => {
             setError(error.message);

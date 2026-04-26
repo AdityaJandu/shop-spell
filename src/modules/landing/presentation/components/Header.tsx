@@ -1,37 +1,25 @@
-"use client";
-
-import React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles } from "lucide-react";
+import { getSession } from "@/lib/get-session-cached";
 
-interface HeaderProps {
-  session?: {
-    user?: {
-      id: string;
-      email: string;
-      name?: string | null;
-      image?: string | null;
-      role?: string | null;
-    };
-  } | null;
-}
-
-export function Header({ session }: HeaderProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-
+export async function Header() {
+  const session = await getSession();
   const isLoggedIn = !!session?.user;
   const user = session?.user;
 
-  const navItems = [
-    { name: "Features", href: "/features", requireAuth: false },
-    { name: "Pricing", href: "/pricing", requireAuth: false },
-    { name: "Showcase", href: "/showcase", requireAuth: false },
-  ];
+  const navItems = isLoggedIn
+    ? [
+      { name: "Explore", href: "/dashboard", requireAuth: true },
+      { name: "Create Store", href: "/onboarding", requireAuth: true },
+    ]
+    : [
+      { name: "Features", href: "/#features", requireAuth: false },
+      { name: "Pricing", href: "/#pricing", requireAuth: false },
+      { name: "Showcase", href: "/#showcase", requireAuth: false },
+    ];
 
   return (
     <header className="w-full sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
@@ -48,33 +36,15 @@ export function Header({ session }: HeaderProps) {
 
         {/* Nav */}
         <nav className="hidden md:flex gap-8 text-sm font-semibold">
-          {navItems.map((item) => {
-            const isActive = pathname.startsWith(item.href);
-            const targetHref =
-              item.requireAuth && !isLoggedIn
-                ? `/sign-in?redirect=${item.href}`
-                : item.href;
-
-            return (
-              <Link
-                key={item.name}
-                href={targetHref}
-                prefetch
-                onMouseEnter={() => router.prefetch(targetHref)}
-                className={cn(
-                  "transition-all duration-200 relative py-1",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {item.name}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full" />
-                )}
-              </Link>
-            );
-          })}
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              className="transition-all duration-200 relative py-1 text-muted-foreground hover:text-foreground"
+            >
+              {item.name}
+            </Link>
+          ))}
         </nav>
 
         {/* CTA */}
@@ -83,15 +53,15 @@ export function Header({ session }: HeaderProps) {
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary opacity-60">
-                  {user?.role || "Member"}
+                  Member
                 </span>
                 <span className="text-sm font-bold text-foreground">
-                  {user?.name || "User"}
+                  {user?.name}
                 </span>
               </div>
 
               {/* Avatar */}
-              <Link href="/profile" prefetch className="hover:scale-105 transition-transform active:scale-95">
+              <Link href="/profile" className="hover:scale-105 transition-transform active:scale-95">
                 {user?.image ? (
                   <Avatar className="size-10 border-2 border-border shadow-sm">
                     <AvatarImage src={user.image} />
@@ -108,19 +78,21 @@ export function Header({ session }: HeaderProps) {
             </div>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                className="active:scale-95 transition-all font-semibold hidden sm:inline-flex"
-                onClick={() => router.push("/sign-in")}
-              >
-                Sign In
-              </Button>
-              <Button
-                className="active:scale-95 transition-all bg-primary-container text-on-primary hover:bg-primary-container/90 rounded-full px-7 font-bold shadow-lg shadow-primary-container/20"
-                onClick={() => router.push("/sign-up")}
-              >
-                Get Started
-              </Button>
+              <Link href="/sign-in">
+                <Button
+                  variant="ghost"
+                  className="active:scale-95 transition-all font-semibold hidden sm:inline-flex"
+                >
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button
+                  className="active:scale-95 transition-all bg-primary-container text-on-primary hover:bg-primary-container/90 rounded-full px-7 font-bold shadow-lg shadow-primary-container/20"
+                >
+                  Get Started
+                </Button>
+              </Link>
             </>
           )}
         </div>

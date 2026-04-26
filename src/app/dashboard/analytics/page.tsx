@@ -1,7 +1,5 @@
+import { AnalyticsPage } from "@/modules/analytics/presentation/ui/AnalyticsPage";
+
 export default function Page() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold">Dashboard: Analytics Screen</h1>
-    </div>
-  );
+  return <AnalyticsPage />;
 }

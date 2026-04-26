@@ -1,6 +1,4 @@
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Settings2, Rocket } from "lucide-react";
 
 export function HowItWorks() {

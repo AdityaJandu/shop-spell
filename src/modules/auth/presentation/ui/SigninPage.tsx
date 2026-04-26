@@ -46,7 +46,7 @@ export function SigninPage() {
         callbackURL: "/",
       }, {
         onSuccess() {
-          router.push("/");
+          router.push("/onboarding");
         }
         ,
         onError({ error }) {
