@@ -1,19 +1,33 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles } from "lucide-react";
-import { getSession } from "@/lib/get-session-cached";
+import { authClient } from "@/lib/auth-client";
 
-export async function Header() {
-  const session = await getSession();
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+
+export function Header() {
+  const trpc = useTRPC();
+  const { data: session } = authClient.useSession();
   const isLoggedIn = !!session?.user;
   const user = session?.user;
+
+  const { data: store } = useQuery(
+    trpc.store.getMyStore.queryOptions(undefined, { enabled: isLoggedIn })
+  );
+
+  const hasStore = !!store;
 
   const navItems = isLoggedIn
     ? [
       { name: "Explore", href: "/explore", requireAuth: true },
-      { name: "Create Store", href: "/onboarding", requireAuth: true },
+      { name: "My Orders", href: "/my-orders", requireAuth: true },
+      ...(hasStore
+        ? [{ name: "Dashboard", href: `/${store.id}/analytics`, requireAuth: true }]
+        : [{ name: "Create Store", href: "/onboarding", requireAuth: true }]),
     ]
     : [
       { name: "Explore", href: "/explore", requireAuth: false },

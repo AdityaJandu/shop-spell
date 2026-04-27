@@ -18,9 +18,17 @@ export function useStore() {
   return ctx;
 }
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
+export function StoreProvider({ 
+  children,
+  storeId 
+}: { 
+  children: React.ReactNode;
+  storeId: string;
+}) {
   const trpc = useTRPC();
-  const { data: store, isLoading, error } = useQuery(trpc.store.getMyStore.queryOptions());
+  const { data: store, isLoading, error } = useQuery(
+    trpc.store.getStore.queryOptions({ storeId })
+  );
 
   if (isLoading) {
     return (
@@ -38,38 +46,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (error) {
+  if (error || !store) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-3">
           <span className="material-symbols-outlined text-5xl text-destructive">error</span>
-          <h2 className="font-h3 text-lg text-on-surface">Something went wrong</h2>
+          <h2 className="font-h3 text-lg text-on-surface">Store not found</h2>
           <p className="text-sm text-on-surface-variant max-w-sm">
-            {error.message || "Unable to load your store. Please try again."}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!store) {
-    // Redirect to onboarding would happen here in a real app,
-    // but for now we show a fallback with empty storeId
-    // The dashboard layout can handle this
-    return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-4">
-          <span className="material-symbols-outlined text-6xl text-primary-container">storefront</span>
-          <h2 className="font-h2 text-xl text-on-surface">No Store Found</h2>
-          <p className="text-sm text-on-surface-variant max-w-sm">
-            You haven&apos;t created a store yet. Head to onboarding to get started.
+            {error?.message || "The store you are looking for does not exist or you do not have access."}
           </p>
           <a
-            href="/onboarding"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-container text-white rounded-full font-medium hover:bg-primary-container/90 transition-colors shadow-[0_2px_12px_rgba(244,97,78,0.2)]"
+            href="/explore"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-surface-container-high text-on-surface rounded-full font-medium hover:bg-surface-container-highest transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">add</span>
-            Create Your Store
+            Go Back to Explore
           </a>
         </div>
       </div>

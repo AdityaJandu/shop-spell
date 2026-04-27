@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 type Props = { storeId: string; dateRange: "7D" | "30D" | "90D" };
 
@@ -245,22 +246,36 @@ export function RevenueChart({ storeId, dateRange }: Props) {
 
                 {tooltip && (
                   <div
-                    className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border bg-background px-3 py-2 text-xs shadow-md"
+                    className={cn(
+                      "pointer-events-none absolute z-10 rounded-xl border border-border/40 bg-background/95 backdrop-blur-md px-4 py-2.5 text-xs shadow-2xl transition-all duration-200",
+                      // Smart Y positioning
+                      tooltip.y < 25 ? "translate-y-4" : "-translate-y-full -mt-4",
+                      // Smart X positioning
+                      tooltip.x < 15 ? "translate-x-0" : tooltip.x > 85 ? "-translate-x-full" : "-translate-x-1/2"
+                    )}
                     style={{
                       left: `${tooltip.x}%`,
-                      top: `calc(${tooltip.y}% - 10px)`,
+                      top: `${tooltip.y}%`,
                     }}
                   >
-                    <p className="font-medium">
-                      {formatRevenue(tooltip.revenue)}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {new Date(tooltip.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}{" "}
-                      · {tooltip.orders} orders
-                    </p>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <p className="font-bold text-sm">
+                          {formatRevenue(tooltip.revenue)}
+                        </p>
+                      </div>
+                      <p className="text-muted-foreground font-medium pl-4">
+                        {new Date(tooltip.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric"
+                        })}
+                      </p>
+                      <p className="text-primary/70 font-bold pl-4 uppercase tracking-tighter text-[10px]">
+                        {tooltip.orders} {tooltip.orders === 1 ? "order" : "orders"}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

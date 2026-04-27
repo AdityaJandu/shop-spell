@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowUp, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 const TYPING_PHRASES = [
   "I sell handmade candles with organic essential oils...",
@@ -14,6 +18,16 @@ const TYPING_PHRASES = [
 ];
 
 export function Hero() {
+  const trpc = useTRPC();
+  const { data: session } = authClient.useSession();
+  const isLoggedIn = !!session?.user;
+
+  const { data: store } = useQuery(
+    trpc.store.getMyStore.queryOptions(undefined, { enabled: isLoggedIn })
+  );
+
+  const hasStore = !!store;
+
   const [displayText, setDisplayText] = useState("");
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,43 +68,53 @@ export function Hero() {
       </Badge>
 
       <h1 className="text-6xl md:text-8xl leading-[1.05] tracking-tight font-black text-foreground mb-10 max-w-4xl">
-        Your store.<br />
-        <span className="bg-linear-to-r from-primary-container to-secondary bg-clip-text text-transparent">One sentence</span>{" "}
-        <span className="opacity-20">away.</span>
+        {hasStore ? "Welcome back to" : "Your store."}<br />
+        <span className="bg-linear-to-r from-primary-container to-secondary bg-clip-text text-transparent">
+          {hasStore ? store.name : "One sentence"}
+        </span>{" "}
+        <span className="opacity-20">{hasStore ? "" : "away."}</span>
       </h1>
 
       <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl leading-relaxed">
-        Describe your business in plain English, and ShopSpell will generate a fully-featured e-commerce experience in seconds.
+        {hasStore 
+          ? "Your store is live and ready for more. Manage your products, view analytics, and grow your business."
+          : "Describe your business in plain English, and ShopSpell will generate a fully-featured e-commerce experience in seconds."}
       </p>
 
-      {/* Animated Input Mockup */}
-      <div className="w-full max-w-3xl bg-card/50 backdrop-blur-sm rounded-3xl p-3 flex items-center shadow-2xl mb-16 border border-border/60 relative group transition-all hover:border-primary-container/30">
-        <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center ml-2">
-          <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-        </div>
-
-        <div className="flex-1 text-left pl-4 overflow-hidden">
-          <div className="relative flex items-center h-12">
-            <span className="text-lg md:text-xl text-foreground font-medium whitespace-nowrap">
-              {displayText}
-            </span>
-            <span className={cn(
-              "w-0.5 h-6 bg-primary-container ml-1 transition-opacity duration-100",
-              isDeleting || displayText === TYPING_PHRASES[phraseIndex] ? "opacity-100" : "animate-pulse"
-            )} />
+      {/* Animated Input Mockup - hide if they already have a store */}
+      {!hasStore && (
+        <div className="w-full max-w-3xl bg-card/50 backdrop-blur-sm rounded-3xl p-3 flex items-center shadow-2xl mb-16 border border-border/60 relative group transition-all hover:border-primary-container/30">
+          <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center ml-2">
+            <Sparkles className="w-6 h-6 text-primary animate-pulse" />
           </div>
-        </div>
 
-        <Button size="icon" className="bg-primary text-on-primary rounded-2xl w-14 h-14 shadow-xl hover:scale-105 active:scale-95 transition-all shrink-0 ml-4 group-hover:shadow-primary-container/20">
-          <ArrowUp className="w-6 h-6" />
-        </Button>
-      </div>
+          <div className="flex-1 text-left pl-4 overflow-hidden">
+            <div className="relative flex items-center h-12">
+              <span className="text-lg md:text-xl text-foreground font-medium whitespace-nowrap">
+                {displayText}
+              </span>
+              <span className={cn(
+                "w-0.5 h-6 bg-primary-container ml-1 transition-opacity duration-100",
+                isDeleting || displayText === TYPING_PHRASES[phraseIndex] ? "opacity-100" : "animate-pulse"
+              )} />
+            </div>
+          </div>
+
+          <Link href="/onboarding">
+            <Button size="icon" className="bg-primary text-on-primary rounded-2xl w-14 h-14 shadow-xl hover:scale-105 active:scale-95 transition-all shrink-0 ml-4 group-hover:shadow-primary-container/20">
+              <ArrowUp className="w-6 h-6" />
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <Button size="lg" className="bg-primary text-on-primary font-bold px-12 py-8 rounded-full flex items-center gap-3 hover:opacity-90 transition-all shadow-2xl text-xl hover:-translate-y-0.5">
-          Get Started
-          <ArrowRight className="w-6 h-6" />
-        </Button>
+        <Link href={hasStore ? `/${store.id}/analytics` : "/onboarding"}>
+          <Button size="lg" className="bg-primary text-on-primary font-bold px-12 py-8 rounded-full flex items-center gap-3 hover:opacity-90 transition-all shadow-2xl text-xl hover:-translate-y-0.5">
+            {hasStore ? "Go to Dashboard" : "Get Started"}
+            <ArrowRight className="w-6 h-6" />
+          </Button>
+        </Link>
       </div>
     </section>
   );

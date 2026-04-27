@@ -1,10 +1,10 @@
 // src/trpc/routers/store.router.ts
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, ne } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../init";
-import { stores } from "@/db/schema";
+import { stores, user } from "@/db/schema";
 import OpenAI from "openai";
 
 const ai = new OpenAI({ apiKey: process.env.OPEN_AI_API_KEY });
@@ -83,6 +83,12 @@ export const storeRouter = createTRPCRouter({
                 })
                 .returning();
 
+            // Mark user as onboarded
+            await ctx.db
+                .update(user)
+                .set({ onboarded: true })
+                .where(eq(user.id, ctx.user.id));
+
             return store;
         }),
 
@@ -139,6 +145,49 @@ export const storeRouter = createTRPCRouter({
                 where: eq(stores.isPublic, true),
                 orderBy: [desc(stores.createdAt)],
                 limit: limit + 1, // fetch one extra to determine if there's a next page
+                offset: cursor,
+                columns: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    logoUrl: true,
+                    bannerUrl: true,
+                    primaryColor: true,
+                    createdAt: true,
+                },
+            });
+
+            const hasNextPage = rows.length > limit;
+            const items = hasNextPage ? rows.slice(0, limit) : rows;
+
+            return {
+                items,
+                nextCursor: hasNextPage ? cursor + limit : null,
+                total: items.length,
+            };
+        }),
+
+    /**
+     * GET /trpc/store.listOtherStores
+     * Fetch all stores EXCEPT the current user's.
+     */
+    listOtherStores: protectedProcedure
+        .input(
+            z.object({
+                cursor: z.number().int().min(0).optional().default(0),
+                limit: z.number().int().min(1).max(50).optional().default(12),
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const { cursor, limit } = input;
+
+            const rows = await ctx.db.query.stores.findMany({
+                where: and(
+                    eq(stores.isPublic, true),
+                    ne(stores.ownerId, ctx.user.id)
+                ),
+                orderBy: [desc(stores.createdAt)],
+                limit: limit + 1,
                 offset: cursor,
                 columns: {
                     id: true,

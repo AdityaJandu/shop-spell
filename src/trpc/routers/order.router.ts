@@ -3,7 +3,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { eq, and, gte, lte, desc } from "drizzle-orm";
 import { createTRPCRouter, protectedProcedure } from "../init";
-import { orders, stores, type Order } from "@/db/schema";
+import { orders, products, stores, orderItems, type Order } from "@/db/schema";
 import type { Context } from "../init";
 
 async function assertStoreOwner(db: Context["db"], userId: string, storeId: string) {
@@ -107,6 +107,86 @@ export const orderRouter = createTRPCRouter({
                 orderBy: [desc(orders.createdAt)],
                 limit: input.limit,
                 columns: { id: true, customerName: true, customerEmail: true, totalAmount: true, status: true, createdAt: true },
+            });
+        }),
+
+    /**
+     * POST /trpc/order.createOrder
+     * Protected procedure for customers to place an order directly.
+     */
+    createOrder: protectedProcedure
+        .input(z.object({
+            storeId: z.string(),
+            productId: z.string(),
+            quantity: z.number().int().min(1),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const { storeId, productId, quantity } = input;
+
+            // 1. Fetch product to get price and verify stock
+            const product = await ctx.db.query.products.findFirst({
+                where: eq(products.id, productId),
+            });
+
+            if (!product) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Product not found." });
+            }
+
+            if (product.stock < quantity) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient stock." });
+            }
+
+            const totalAmount = (parseFloat(product.price) * quantity).toFixed(2);
+            const orderId = `ord_${Math.random().toString(36).substring(2, 11)}`;
+
+            // 2. Create the order in a transaction
+            return await ctx.db.transaction(async (tx) => {
+                const [newOrder] = await tx
+                    .insert(orders)
+                    .values({
+                        id: orderId,
+                        storeId,
+                        customerId: ctx.user.id,
+                        customerName: ctx.user.name,
+                        customerEmail: ctx.user.email,
+                        totalAmount,
+                        status: "New",
+                    })
+                    .returning();
+
+                // 3. Create order item
+                await tx.insert(orderItems).values({
+                    orderId,
+                    productId,
+                    productName: product.name,
+                    quantity,
+                    unitPrice: product.price,
+                });
+
+                // 4. Update product stock and total sold
+                await tx
+                    .update(products)
+                    .set({
+                        stock: product.stock - quantity,
+                        totalSold: (product.totalSold || 0) + quantity,
+                    })
+                    .where(eq(products.id, productId));
+
+                return newOrder;
+            });
+        }),
+    /**
+     * Fetch all orders made by the current user across all stores.
+     */
+    getUserOrders: protectedProcedure
+        .query(async ({ ctx }) => {
+            return await ctx.db.query.orders.findMany({
+                where: eq(orders.customerId, ctx.user.id),
+                with: {
+                    items: true,
+                    store: true,
+                },
+                orderBy: [desc(orders.createdAt)],
             });
         }),
 });

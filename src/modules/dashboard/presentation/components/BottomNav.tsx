@@ -3,15 +3,17 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useStore } from "@/modules/dashboard/store-context";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { storeId } = useStore();
 
   const links = [
-    { name: "Chat", href: "/chat", icon: "chat" },
-    { name: "Orders", href: "/orders", icon: "receipt_long" },
-    { name: "Products", href: "/products", icon: "inventory_2" },
-    { name: "Analytics", href: "/analytics", icon: "query_stats" },
+    { name: "Chat", href: `/${storeId}/chat`, icon: "chat" },
+    { name: "Orders", href: `/${storeId}/orders`, icon: "receipt_long" },
+    { name: "Products", href: `/${storeId}/products`, icon: "inventory_2" },
+    { name: "Analytics", href: `/${storeId}/analytics`, icon: "query_stats" },
   ];
 
   return (

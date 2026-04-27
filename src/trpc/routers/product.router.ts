@@ -127,6 +127,35 @@ export const productRouter = createTRPCRouter({
         }),
 
     /**
+     * GET /trpc/product.listStoreProductsPublic
+     * Storefront — public product list for a specific store.
+     */
+    listStoreProductsPublic: publicProcedure
+        .input(
+            z.object({
+                storeId: z.string(),
+                category: z.string().optional(),
+                limit: z.number().int().min(1).max(100).optional().default(24),
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const conditions = [
+                eq(products.storeId, input.storeId),
+                eq(products.isActive, true)
+            ];
+
+            if (input.category) conditions.push(eq(products.category, input.category));
+
+            const rows = await ctx.db.query.products.findMany({
+                where: and(...conditions),
+                orderBy: [desc(products.createdAt)],
+                limit: input.limit,
+            });
+
+            return rows;
+        }),
+
+    /**
      * GET /trpc/product.listMarketplaceProducts
      * Explore page — featured / trending products across all public stores.
      */
@@ -173,8 +202,9 @@ export const productRouter = createTRPCRouter({
 
     /**
      * GET /trpc/product.getProduct
+     * Publicly accessible product details for the storefront.
      */
-    getProduct: protectedProcedure
+    getProduct: publicProcedure
         .input(z.object({ productId: z.string() }))
         .query(async ({ ctx, input }) => {
             const product = await ctx.db.query.products.findFirst({
@@ -182,9 +212,6 @@ export const productRouter = createTRPCRouter({
             });
 
             if (!product) throw new TRPCError({ code: "NOT_FOUND", message: "Product not found." });
-
-            // verify ownership
-            await assertStoreOwner(ctx.db, ctx.user.id, product.storeId);
 
             return product;
         }),

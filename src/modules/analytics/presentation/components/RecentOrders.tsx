@@ -34,7 +34,7 @@ export function RecentOrders({ storeId }: Props) {
           <CardTitle className="font-h3 text-body-lg font-bold text-on-surface">
             Recent Transactions
           </CardTitle>
-          <Link href="/orders">
+          <Link href={`/${storeId}/orders`}>
             <Button
               variant="ghost"
               className="text-secondary hover:text-on-secondary-container font-label-caps text-label-caps uppercase tracking-widest transition-colors p-0 h-auto"

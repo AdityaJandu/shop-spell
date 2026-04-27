@@ -110,6 +110,7 @@ export function OrdersTable({ storeId, status, dateRange }: Props) {
               <th className="px-6 py-4 text-left">Items</th>
               <th className="px-6 py-4 text-left">Total</th>
               <th className="px-6 py-4 text-left">Status</th>
+              <th className="px-6 py-4 text-left">Actions</th>
               <th className="px-6 py-4 text-right">Date</th>
             </tr>
           </thead>
@@ -169,41 +170,60 @@ export function OrdersTable({ storeId, status, dateRange }: Props) {
                     ${Number(order.totalAmount).toFixed(2)}
                   </td>
 
-                  {/* Status */}
-                  <td className="px-6 py-4">
-                    <div className="relative group">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border cursor-pointer",
-                          statusStyles[order.status]
-                        )}
-                      >
-                        {order.status}
-                        {possibleNext.length > 0 && (
-                          <span className="material-symbols-outlined text-[12px]">
-                            expand_more
-                          </span>
-                        )}
-                      </span>
+                   <td className="px-6 py-4">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border shadow-sm",
+                        statusStyles[order.status]
+                      )}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
 
-                      {possibleNext.length > 0 && (
-                        <div className="absolute top-full left-0 mt-2 w-40 bg-white border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition">
-                          {possibleNext.map((s) => (
-                            <button
-                              key={s}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateStatusMutation.mutate({
-                                  orderId: order.id,
-                                  status: s as Order["status"],
-                                });
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-muted"
-                            >
-                              Move to <span className="font-medium">{s}</span>
-                            </button>
-                          ))}
+                  {/* Actions */}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {order.status === "New" ? (
+                        <>
+                          <button
+                            onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: "Processing" })}
+                            className="h-8 px-3 rounded-lg bg-primary text-white text-xs font-bold hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">check</span>
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: "Refunded" })}
+                            className="h-8 px-3 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold hover:bg-surface-container-highest transition-colors flex items-center gap-1.5"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">close</span>
+                            Reject
+                          </button>
+                        </>
+                      ) : possibleNext.length > 0 ? (
+                        <div className="relative group">
+                          <button className="h-8 px-3 rounded-lg bg-surface-container-low border border-border/50 text-on-surface text-xs font-bold hover:bg-surface-container-high transition-colors flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]">sync</span>
+                            Update
+                            <span className="material-symbols-outlined text-[14px]">expand_more</span>
+                          </button>
+                          
+                          <div className="absolute top-full left-0 z-10 mt-1 w-32 bg-surface-container-lowest border border-border rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all transform origin-top scale-95 group-hover:scale-100">
+                            {possibleNext.map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => updateStatusMutation.mutate({ orderId: order.id, status: s as Order["status"] })}
+                                className="w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-primary/5 hover:text-primary transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center justify-between group/item"
+                              >
+                                {s}
+                                <span className="material-symbols-outlined text-[14px] opacity-0 group-hover/item:opacity-100 transition-opacity">arrow_forward</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">No actions available</span>
                       )}
                     </div>
                   </td>

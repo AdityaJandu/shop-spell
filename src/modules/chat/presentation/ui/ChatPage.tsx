@@ -32,7 +32,7 @@ export function ChatPage() {
 
   const sendMutation = useMutation(
     trpc.ai.sendMessage.mutationOptions({
-      onMutate: async ({ message }) => {
+      onMutate: async () => {
         // Cancel in-flight refetches so they don't overwrite our optimistic update
         await queryClient.cancelQueries({ queryKey: historyQueryKey });
 
